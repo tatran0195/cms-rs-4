@@ -1,0 +1,310 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/cms-server",
+    # "crates/cms-automation",
+    # "crates/cms-automation-store",
+    # "crates/cms-automation-api",
+    "crates/cms-core",
+    "crates/cms-authz-gate",
+    "crates/cms-nabh",
+    "crates/cms-signing",
+    "crates/cms-notifications",
+    "crates/cms-approvals-core",
+    "crates/cms-approvals-store",
+    "crates/cms-approvals",
+    "crates/cms-snomed",
+    "crates/cms-approvals-api",
+    "crates/cms-api-keys",
+    "crates/cms-api-keys-api",
+    "crates/cms-db",
+    "crates/cms-db-migrations",
+    "crates/cms-abdm",
+    "crates/cms-loadtest",
+    "crates/cms-adapter-sdk",
+    "crates/cms-integration-hub",
+    "crates/cms-bridge",
+    "crates/cms-print",
+    "crates/cms-proxy",
+    "crates/cms-authz",
+    "crates/cms-crypto",
+    "crates/cms-fhir",
+    "crates/cms-outbox",
+    "crates/cms-db-topology",
+    "crates/cms-edge",
+    "crates/cms-edge-rn",
+    "crates/cms-fhir",
+    "crates/cms-offline-core",
+    "crates/cms-seed",
+    "crates/cms-server-core",
+    "crates/cms-server-services",
+    "crates/cms-custom-code",
+    "crates/cms-lms",
+    "crates/cms-cssd",
+    "crates/cms-ambulance",
+    "crates/cms-microsite",
+    "crates/cms-home-health",
+    "crates/cms-diet",
+    "crates/cms-emergency",
+    "crates/cms-indent",
+    "crates/cms-blood-bank",
+    "crates/cms-radiology",
+    "crates/cms-tokens",
+    "crates/cms-lab",
+    "crates/cms-pharmacy",
+    "crates/cms-camp",
+    "crates/cms-opd",
+    "crates/cms-ipd",
+    "crates/cms-patients",
+    "crates/cms-dashboard",
+    "crates/cms-mrd",
+    "crates/cms-ot",
+    "crates/cms-quality",
+    "crates/cms-regulatory",
+    "crates/cms-payment-gateway",
+    "crates/cms-print-data",
+    "crates/cms-order-sets",
+    "crates/cms-communications",
+    "crates/cms-devices",
+    "crates/cms-specialty-interventional",
+    "crates/cms-consent",
+    "crates/cms-security",
+    "crates/cms-pharmacy-finance",
+    "crates/cms-pharmacy-fulfilment",
+    "crates/cms-cms",
+    "crates/cms-pharmacy-safety",
+    "crates/cms-pharmacy-payments",
+    "crates/cms-pharmacy-free-dispensing",
+    "crates/cms-clinical-offline",
+    "crates/cms-infra-settings",
+    "crates/cms-sharing",
+    "crates/cms-catalog-import",
+    "crates/cms-sso-login",
+    "crates/cms-order-basket",
+    "crates/cms-onboarding",
+    "crates/cms-ai",
+    "crates/cms-mfa",
+    "crates/cms-auth",
+    "crates/cms-payroll",
+    "crates/cms-doctor-packages",
+    "crates/cms-upload",
+    "crates/cms-fhir-api",
+    "crates/cms-case-sheet-scan",
+    "crates/cms-billing",
+    "crates/cms-oauth",
+    "crates/cms-documents-render",
+    "crates/cms-mail-provisioning",
+    "crates/cms-pharmacy-petty-cash",
+    "crates/cms-pharmacy-repeats",
+    "crates/cms-ward-stock",
+    "crates/cms-app-manifest",
+    "crates/cms-invitations",
+    "crates/cms-news",
+    "crates/cms-vte",
+    "crates/cms-pharmacy-cash-drawer",
+    "crates/cms-device-pairing",
+    "crates/cms-nhcx-callback",
+    "crates/cms-patient-packages",
+    "crates/cms-pharmacy-dispense-ops",
+    "crates/cms-ipd-post-discharge",
+    "crates/cms-client-errors",
+    "crates/cms-vpn",
+    "crates/cms-hr",
+    "crates/cms-setup",
+    "crates/cms-it-security",
+    "crates/cms-assets",
+    "crates/cms-bme",
+    "crates/cms-tv",
+    "crates/cms-reports",
+    "crates/cms-specialty-other",
+    "crates/cms-clinical-scores",
+    "crates/cms-clinical-ops",
+    "crates/cms-identity",
+    "crates/cms-materials",
+    "crates/cms-marketing",
+    "crates/cms-facilities",
+    "crates/cms-documents",
+    "crates/cms-infra-utils",
+    "crates/cms-admin",
+    "crates/cms-analytics",
+    "crates/cms-platform",
+    "crates/cms-nursing",
+    "crates/cms-telehealth",
+    "crates/cms-specialty",
+    "crates/cms-care-mgmt",
+    "crates/cms-infection-control",
+    "crates/cms-workflow",
+    "crates/cms-scheduling",
+    "crates/cms-ancillary",
+    "crates/cms-community-health",
+    "apps/edge",
+    "crates/cms-printing",
+    "apps/desktop/src-tauri",
+]
+# What a bare `cargo build` builds. Naming the four deploy binaries is
+# enough: cargo builds each one's dependency closure, which is ~130 of
+# the crates above. What it skips is what a hospital API server never
+# needs -- the Tauri desktop app and its entire macOS GUI tree (tauri,
+# wry, tao, objc2-app-kit, muda, tray-icon), the uniffi bindgen that
+# cms-edge-rn runs twice, and the goose loadtest harness.
+#
+# Measured from target/cargo-timings: 9.3 of 79.4 CPU-minutes, 11.7%.
+#
+# This is NOT a coverage change for CI. A library crate that nothing
+# here depends on is no longer type-checked by a bare `cargo build`, so
+# CI and the pre-merge gate must say `--workspace` explicitly.
+default-members = [
+    "crates/cms-server",
+    "crates/cms-proxy",
+    "apps/edge",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "UNLICENSED"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Web framework
+axum = { version = "0.8", features = ["macros", "ws"] }
+tower = { version = "0.5" }
+tower-http = { version = "0.6", features = ["cors", "trace", "request-id", "util", "set-header", "fs", "compression-br", "compression-gzip", "compression-zstd", "compression-deflate"] }
+
+# Database
+sqlx = { version = "0.8.3", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono", "json", "migrate", "macros", "rust_decimal"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Configuration
+figment = { version = "0.10", features = ["toml", "env"] }
+
+# Auth
+jsonwebtoken = { version = "10", default-features = false, features = ["aws_lc_rs"] }
+argon2 = "0.5"
+
+# Utilities
+uuid = { version = "1", features = ["v4", "v5", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+cron = "0.15"
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+dotenvy = "0.15"
+
+# Decimal
+rust_decimal = { version = "1", features = ["serde-with-str"] }
+
+# Crypto
+rand = "0.9"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+base64 = "0.22"
+
+# Compression (cold-tier ObjectStore)
+flate2 = "1"
+
+# Validation
+regex = "1"
+url = "2"
+
+# Async streams (WebSocket)
+futures = "0.3"
+async-trait = "0.1"
+async-stream = "0.3"
+
+# Hybrid deploy mode — local Ed25519 JWT signer + tests
+ed25519-dalek = "2"
+tempfile = "3"
+
+# HTTP client (for YottaDB REST)
+reqwest = { version = "0.12", features = ["json", "rustls-tls-native-roots"], default-features = false }
+
+# AI / LLM
+rig-core = { version = "0.35", features = ["derive"] }
+schemars = "1"
+
+# Code execution (pipeline custom code)
+mlua = { version = "0.10", features = ["lua54", "serialize", "send", "vendored"] }
+
+# CRDT (Loro) — offline-first replication. Sprint C foundation.
+loro = "1.4"
+
+# LAN service discovery for the edge sync hub
+mdns-sd = "0.13"
+
+[patch.crates-io]
+pingora-core = { path = "vendor/pingora-core-0.8.0" }
+sqlx = { path = "vendor/sqlx-0.8.6" }
+sqlx-macros-core = { path = "vendor/sqlx-macros-core-0.8.6" }
+
+# ── Build profiles ──────────────────────────────────────────
+
+# Dev builds are optimized for fast iteration (`make dev`), not debugger fidelity.
+# `line-tables-only` keeps backtraces with file:line but skips the heavy DWARF that
+# dominates link time; `unpacked` split-debuginfo skips the slow macOS dsymutil step.
+# Together these cut relink time on every incremental rebuild of the server binary.
+[profile.dev]
+debug = "line-tables-only"
+split-debuginfo = "unpacked"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+
+# Unused = error. Future dead code, unused imports, unused variables, and
+# unreachable patterns must be fixed (or explicitly allowed at the site)
+# instead of silently compiling.
+unused = { level = "deny", priority = -1 }
+dead_code = "deny"
+unused_must_use = "deny"
+unreachable_pub = "deny"
+unused_qualifications = "deny"
+
+[workspace.lints.clippy]
+# Groups
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+# Specific denials
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+print_stdout = "deny"
+print_stderr = "deny"
+clone_on_ref_ptr = "deny"
+inefficient_to_string = "deny"
+manual_let_else = "deny"
+needless_pass_by_value = "deny"
+semicolon_if_nothing_returned = "deny"
+wildcard_imports = "deny"
+
+# Relax some pedantic lints
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_precision_loss = "allow"

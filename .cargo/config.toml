@@ -1,0 +1,5 @@
+[env]
+SQLX_OFFLINE = "true"
+OPENSSL_DIR = "C:\\Program Files\\PostgreSQL\\18"
+OPENSSL_NO_VENDOR = "1"
+AWS_LC_SYS_NO_ASM = "1"

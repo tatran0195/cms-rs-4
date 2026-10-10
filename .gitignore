@@ -1,0 +1,119 @@
+# Rust
+/target/
+crates/*/target/
+**/*.rs.bk
+Cargo.lock
+
+# Environment
+.env
+.env.production
+.env*.local
+
+# SSO provisioning creds (client secret) — real file is local-only.
+entra-sso.json
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+apps/web/dist/
+packages/*/lib/
+
+# Test coverage
+coverage/
+
+# Turbo
+.turbo/
+
+# Local development logs
+var/log/dev/
+
+# Local CLI tools downloaded during checks
+.tools/
+
+# Local development certificates
+var/local-https/
+
+# React Native — Mobile
+apps/*/.expo/
+apps/mobile-staff/android/
+apps/mobile-staff/ios/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/.gradle/
+apps/mobile/ios/build/
+apps/mobile/ios/Pods/
+
+# React Native — TV
+apps/tv/android/
+apps/tv/ios/
+apps/tv/android/app/build/
+apps/tv/android/build/
+apps/tv/android/.gradle/
+
+# Metro
+*.hbc
+
+# Profiling
+flamegraph.svg
+perf.data
+perf.data.old
+
+# SQLx offline data is committed for compile-time query verification
+
+# Docker volumes
+pgdata/
+yottadata/
+
+# TanStack
+.tanstack/
+
+# Playwright
+apps/web/e2e/.auth/
+apps/web/test-results/
+apps/web/playwright-report/
+apps/storybook/storybook-static/
+
+# Generated smoke tests (regenerate via: make generate-smoke)
+apps/web/e2e/smoke/*.smoke.spec.ts
+# Allure Report (generated)
+qa/allure-results/
+qa/allure-report/
+
+qa/allure-*/
+qa/kiwi-results/
+apps/web/allure-results/
+
+# Terraform local state + provider caches (~700MB per module)
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# cms-edge dev state (Loro docs + Merkle chain)
+var/
+
+# Detox run artifacts — screenshots and device logs from the last e2e run.
+apps/*/artifacts/
+
+# Environment backups. infra/.env.bak.1650 was found holding four
+# secret-bearing lines and untracked but NOT ignored — one `git add -A` from
+# being in history permanently, where a rotation cannot remove it.
+*.bak
+.env.bak.*
+infra/.env.bak.*

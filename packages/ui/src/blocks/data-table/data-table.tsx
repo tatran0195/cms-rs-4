@@ -12,12 +12,13 @@ import { DataTableSortingMenu } from './components/data-table-sorting-menu';
 import { DataTableTable } from './components/data-table-table';
 import { DataTableToolbar } from './components/data-table-toolbar';
 import { DataTableContextProvider } from './context/data-table-context-provider';
+import type { DataTableRowData } from './types';
 import type { UseDataTableReturn } from './use-data-table';
 
 /**
  * The props of the `DataTable` component.
  */
-interface DataTableProps<TData> {
+interface DataTableProps<TData extends DataTableRowData = DataTableRowData> {
   /**
    * The instance returned by the `useDataTable` hook.
    */
@@ -37,8 +38,8 @@ interface DataTableProps<TData> {
  * It's built on top of the `Table` component while expanding its functionality.
  * The `DataTable` is useful to create tables similar to those in the cms Admin dashboard.
  */
-const Root = <TData,>({ instance, children, className }: DataTableProps<TData>) => (
-  <DataTableContextProvider instance={instance}>
+const Root = <TData extends DataTableRowData = DataTableRowData>({ instance, children, className }: DataTableProps<TData>) => (
+  <DataTableContextProvider instance={instance as unknown as UseDataTableReturn<DataTableRowData>}>
     <div className={clx('relative flex min-h-0 flex-1 flex-col', className)}>{children}</div>
   </DataTableContextProvider>
 );

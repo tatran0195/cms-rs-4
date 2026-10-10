@@ -24,7 +24,13 @@
   },
   "overrides": [
     {
-      "includes": ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx", "**/tests/**"],
+      "includes": [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/tests/**"
+      ],
       "javascript": {
         "globals": [
           "describe",

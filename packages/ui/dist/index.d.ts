@@ -5,7 +5,7 @@ import React$1 from "react";
 import { VariantProps } from "cva";
 import { CalendarDate, CalendarDateTime } from "@internationalized/date";
 import { AriaDatePickerProps, CalendarProps, I18nProviderProps } from "react-aria";
-import { AccessorFn, AccessorFnColumnDef, AccessorKeyColumnDef, CellContext, Column, ColumnDef, ColumnFilter, ColumnOrderState, ColumnOrderState as ColumnOrderState$1, ColumnSort, DeepKeys, DeepValue, DisplayColumnDef, HeaderContext, IdIdentifier, IdentifiedColumnDef, PaginationState, Row, RowData, RowSelectionState, SortDirection, StringHeaderIdentifier, StringOrTemplateHeader, TableOptions, VisibilityState, VisibilityState as VisibilityState$1, useReactTable } from "@tanstack/react-table";
+import { AccessorFn, AccessorFnColumnDef, AccessorKeyColumnDef, Cell, CellContext, Column, ColumnDef, ColumnFilter, ColumnOrderState, ColumnOrderState as ColumnOrderState$1, ColumnSort, DeepKeys, DeepValue, DisplayColumnDef, Header, HeaderContext, HeaderGroup, IdIdentifier, IdentifiedColumnDef, PaginationState, Row, RowData, RowSelectionState, SortDirection, StringHeaderIdentifier, StringOrTemplateHeader, Table as Table$1, TableOptions, Updater } from "@tanstack/react-table";
 import Primitive from "react-currency-input-field";
 import { Toaster as Toaster$1 } from "sonner";
 //#region src/blocks/data-table/components/data-table-column-visibility-menu.d.ts
@@ -131,20 +131,49 @@ declare namespace DataTableSortingMenu {
 }
 //#endregion
 //#region src/blocks/data-table/types.d.ts
+declare const dataTableFeatures: {
+  cellSelectionFeature: typeof import("@tanstack/react-table").cellSelectionFeature;
+  cellSpanningFeature: typeof import("@tanstack/react-table").cellSpanningFeature;
+  columnFacetingFeature: typeof import("@tanstack/react-table").columnFacetingFeature;
+  columnFilteringFeature: typeof import("@tanstack/react-table").columnFilteringFeature;
+  columnGroupingFeature: typeof import("@tanstack/react-table").columnGroupingFeature;
+  columnOrderingFeature: typeof import("@tanstack/react-table").columnOrderingFeature;
+  columnPinningFeature: typeof import("@tanstack/react-table").columnPinningFeature;
+  columnResizingFeature: typeof import("@tanstack/react-table").columnResizingFeature;
+  columnSizingFeature: typeof import("@tanstack/react-table").columnSizingFeature;
+  columnVisibilityFeature: typeof import("@tanstack/react-table").columnVisibilityFeature;
+  globalFilteringFeature: typeof import("@tanstack/react-table").globalFilteringFeature;
+  rowAggregationFeature: typeof import("@tanstack/react-table").rowAggregationFeature;
+  rowExpandingFeature: typeof import("@tanstack/react-table").rowExpandingFeature;
+  rowPaginationFeature: typeof import("@tanstack/react-table").rowPaginationFeature;
+  rowPinningFeature: typeof import("@tanstack/react-table").rowPinningFeature;
+  rowSelectionFeature: typeof import("@tanstack/react-table").rowSelectionFeature;
+  rowSortingFeature: typeof import("@tanstack/react-table").rowSortingFeature;
+  coreRowModel: (table: Table$1<import("@tanstack/react-table").TableFeatures, RowData>) => () => import("@tanstack/react-table").RowModel<import("@tanstack/react-table").TableFeatures, RowData>;
+  filteredRowModel: (table: Table$1<import("@tanstack/react-table").TableFeatures, any>) => () => import("@tanstack/react-table").RowModel<import("@tanstack/react-table").TableFeatures, any>;
+  sortedRowModel: (table: Table$1<import("@tanstack/react-table").TableFeatures, RowData>) => () => import("@tanstack/react-table").RowModel<import("@tanstack/react-table").TableFeatures, RowData>;
+  paginatedRowModel: (table: Table$1<import("@tanstack/react-table").TableFeatures, any>) => () => import("@tanstack/react-table").RowModel<import("@tanstack/react-table").TableFeatures, any>;
+  facetedRowModel: (table: Table$1<import("@tanstack/react-table").TableFeatures, any>, columnId: string) => () => import("@tanstack/react-table").RowModel<import("@tanstack/react-table").TableFeatures, any>;
+  facetedUniqueValues: (table: Table$1<import("@tanstack/react-table").TableFeatures, any>, columnId: string) => () => Map<any, number>;
+};
+type DataTableFeatures = typeof dataTableFeatures;
 type DataTableRowData = RowData;
-type DataTableRow<TData extends DataTableRowData> = Row<TData>;
-type DataTableAction<TData> = {
+type DataTableRow<TData extends DataTableRowData = DataTableRowData> = Row<DataTableFeatures, TData>;
+type DataTableCell<TData extends DataTableRowData = DataTableRowData, TValue = unknown> = Cell<DataTableFeatures, TData, TValue>;
+type DataTableHeader<TData extends DataTableRowData = DataTableRowData, TValue = unknown> = Header<DataTableFeatures, TData, TValue>;
+type DataTableHeaderGroup<TData extends DataTableRowData = DataTableRowData> = HeaderGroup<DataTableFeatures, TData>;
+type DataTableAction<TData extends DataTableRowData = DataTableRowData> = {
   label: string;
-  onClick: (ctx: CellContext<TData, unknown>) => void;
+  onClick: (ctx: DataTableCellContext<TData, unknown>) => void;
   icon?: React.ReactNode;
 };
-interface DataTableCellContext<TData extends DataTableRowData, TValue> extends CellContext<TData, TValue> {}
-interface DataTableHeaderContext<TData extends DataTableRowData, TValue> extends HeaderContext<TData, TValue> {}
+interface DataTableCellContext<TData extends DataTableRowData = DataTableRowData, TValue = unknown> extends CellContext<DataTableFeatures, TData, TValue> {}
+interface DataTableHeaderContext<TData extends DataTableRowData = DataTableRowData, TValue = unknown> extends HeaderContext<DataTableFeatures, TData, TValue> {}
 type DataTableSortDirection = SortDirection;
-interface DataTableActionColumnDef<TData> extends Pick<DisplayColumnDef<TData>, 'meta'> {
+interface DataTableActionColumnDef<TData extends DataTableRowData = DataTableRowData> extends Pick<DisplayColumnDef<DataTableFeatures, TData, unknown>, 'meta'> {
   actions: DataTableAction<TData>[] | DataTableAction<TData>[][] | ((ctx: DataTableCellContext<TData, unknown>) => DataTableAction<TData>[] | DataTableAction<TData>[][]);
 }
-interface DataTableSelectColumnDef<TData> extends Pick<DisplayColumnDef<TData>, 'cell' | 'header'> {}
+interface DataTableSelectColumnDef<TData extends DataTableRowData = DataTableRowData> extends Pick<DisplayColumnDef<DataTableFeatures, TData, unknown>, 'cell' | 'header'> {}
 type DataTableSortableColumnDef = {
   /**
    * The label to display in the sorting menu.
@@ -187,15 +216,16 @@ type DataTableTruncatableColumnDef = {
    */
   truncateTooltip?: boolean;
 };
-interface DataTableColumn<TData extends DataTableRowData, TValue = unknown> extends Column<TData, TValue> {}
-type DataTableColumnDef<TData extends DataTableRowData, TValue = unknown> = ColumnDef<TData, TValue>;
-type DataTableColumnIdentifiers<TData extends DataTableRowData, TValue> = IdIdentifier<TData, TValue> | StringHeaderIdentifier;
-type DataTableDisplayColumnDef<TData extends DataTableRowData, TValue = unknown> = Pick<DisplayColumnDef<TData, TValue>, 'meta' | 'header' | 'cell' | 'minSize' | 'maxSize' | 'size'> & DataTableColumnIdentifiers<TData, TValue>;
-interface DataTableIdentifiedColumnDef<TData extends DataTableRowData, TValue> extends Pick<IdentifiedColumnDef<TData, TValue>, 'meta' | 'header' | 'cell' | 'minSize' | 'maxSize' | 'size'> {
+interface DataTableColumn<TData extends DataTableRowData = DataTableRowData, TValue = unknown> extends Column<DataTableFeatures, TData, TValue> {}
+type DataTableColumnDef<TData extends DataTableRowData = DataTableRowData, TValue = unknown> = ColumnDef<DataTableFeatures, TData, TValue>;
+type DataTableTable<TData extends DataTableRowData = DataTableRowData> = Table$1<DataTableFeatures, TData>;
+type DataTableColumnIdentifiers<TData extends DataTableRowData, TValue> = IdIdentifier<DataTableFeatures, TData, TValue> | StringHeaderIdentifier;
+type DataTableDisplayColumnDef<TData extends DataTableRowData = DataTableRowData, TValue = unknown> = Pick<DisplayColumnDef<DataTableFeatures, TData, TValue>, 'meta' | 'header' | 'cell' | 'minSize' | 'maxSize' | 'size'> & DataTableColumnIdentifiers<TData, TValue>;
+interface DataTableIdentifiedColumnDef<TData extends DataTableRowData = DataTableRowData, TValue = unknown> extends Pick<IdentifiedColumnDef<DataTableFeatures, TData, TValue>, 'meta' | 'header' | 'cell' | 'minSize' | 'maxSize' | 'size'> {
   id?: string;
-  header?: StringOrTemplateHeader<TData, TValue>;
+  header?: StringOrTemplateHeader<DataTableFeatures, TData, TValue>;
 }
-interface DataTableColumnHelper<TData> {
+interface DataTableColumnHelper<TData extends DataTableRowData = DataTableRowData> {
   /**
    * Create a accessor column.
    *
@@ -203,32 +233,34 @@ interface DataTableColumnHelper<TData> {
    * @param column The column to create for the accessor.
    * @returns The created accessor.
    */
-  accessor: <TAccessor extends AccessorFn<TData> | DeepKeys<TData>, TValue extends TAccessor extends AccessorFn<TData, infer TReturn> ? TReturn : TAccessor extends DeepKeys<TData> ? DeepValue<TData, TAccessor> : never>(accessor: TAccessor, column: TAccessor extends AccessorFn<TData> ? DataTableDisplayColumnDef<TData, TValue> & DataTableSortableColumnDef & DataTableAlignableColumnDef & DataTableTruncatableColumnDef : DataTableIdentifiedColumnDef<TData, TValue> & DataTableSortableColumnDef & DataTableAlignableColumnDef & DataTableTruncatableColumnDef) => TAccessor extends AccessorFn<TData> ? AccessorFnColumnDef<TData, TValue> : AccessorKeyColumnDef<TData, TValue>;
+  accessor: <TAccessor extends AccessorFn<TData> | DeepKeys<TData>, TValue extends TAccessor extends AccessorFn<TData, infer TReturn> ? TReturn : TAccessor extends DeepKeys<TData> ? DeepValue<TData, TAccessor> : never>(accessor: TAccessor, column: TAccessor extends AccessorFn<TData> ? DataTableDisplayColumnDef<TData, TValue> & DataTableSortableColumnDef & DataTableAlignableColumnDef & DataTableTruncatableColumnDef : DataTableIdentifiedColumnDef<TData, TValue> & DataTableSortableColumnDef & DataTableAlignableColumnDef & DataTableTruncatableColumnDef) => TAccessor extends AccessorFn<TData> ? AccessorFnColumnDef<DataTableFeatures, TData, TValue> : AccessorKeyColumnDef<DataTableFeatures, TData, TValue>;
   /**
    * Create a display column.
    *
    * @param column The column to create the display for.
    * @returns The created display column.
    */
-  display: (column: DataTableDisplayColumnDef<TData>) => DisplayColumnDef<TData>;
+  display: (column: DataTableDisplayColumnDef<TData>) => DisplayColumnDef<DataTableFeatures, TData, unknown>;
   /**
    * Create an action column.
    *
    * @param props The props to create the action column for.
    * @returns The created action column.
    */
-  action: (props: DataTableActionColumnDef<TData>) => DisplayColumnDef<TData, unknown>;
+  action: (props: DataTableActionColumnDef<TData>) => DisplayColumnDef<DataTableFeatures, TData, unknown>;
   /**
    * Create a select column.
    *
    * @param props The props to create the select column for.
    * @returns The created select column.
    */
-  select: (props?: DataTableSelectColumnDef<TData>) => DisplayColumnDef<TData, unknown>;
+  select: (props?: DataTableSelectColumnDef<TData>) => DisplayColumnDef<DataTableFeatures, TData, unknown>;
 }
 interface DataTableSortingState extends ColumnSort {}
 interface DataTableRowSelectionState extends RowSelectionState {}
 interface DataTablePaginationState extends PaginationState {}
+type ColumnVisibilityState = Record<string, boolean>;
+type VisibilityState = ColumnVisibilityState;
 type DataTableFilteringState<T extends Record<string, unknown> = Record<string, unknown>> = { [K in keyof T]: T[K]; };
 type DataTableFilterType = 'radio' | 'select' | 'date' | 'multiselect' | 'string' | 'number' | 'custom';
 type DataTableFilterOption<T = string> = {
@@ -431,8 +463,8 @@ interface DataTableTableProps {
    */
   emptyState?: DataTableEmptyStateProps;
 }
-declare function DataTableTable(props: DataTableTableProps): React$2.JSX.Element;
-declare namespace DataTableTable {
+declare function DataTableTable$1(props: DataTableTableProps): React$2.JSX.Element;
+declare namespace DataTableTable$1 {
   var displayName: string;
 }
 //#endregion
@@ -482,7 +514,7 @@ interface DataTableToolbarProps {
 declare const DataTableToolbar: (props: DataTableToolbarProps) => React$2.JSX.Element;
 //#endregion
 //#region src/blocks/data-table/use-data-table.d.ts
-interface DataTableOptions<TData> extends Pick<TableOptions<TData>, 'data' | 'getRowId'> {
+interface DataTableOptions<TData extends DataTableRowData = DataTableRowData> extends Pick<TableOptions<DataTableFeatures, TData>, 'data' | 'getRowId'> {
   /**
    * The columns to use for the table.
    */
@@ -559,8 +591,8 @@ interface DataTableOptions<TData> extends Pick<TableOptions<TData>, 'data' | 'ge
    * The state and callback for the column visibility.
    */
   columnVisibility?: {
-    state: VisibilityState$1;
-    onColumnVisibilityChange: (state: VisibilityState$1) => void;
+    state: VisibilityState;
+    onColumnVisibilityChange: (state: VisibilityState) => void;
   };
   /**
    * The state and callback for the column order.
@@ -570,9 +602,31 @@ interface DataTableOptions<TData> extends Pick<TableOptions<TData>, 'data' | 'ge
     onColumnOrderChange: (state: ColumnOrderState$1) => void;
   };
 }
-interface UseDataTableReturn<TData> extends Pick<ReturnType<typeof useReactTable<TData>>, 'getHeaderGroups' | 'getRowModel' | 'getCanNextPage' | 'getCanPreviousPage' | 'nextPage' | 'previousPage' | 'getPageCount' | 'getAllColumns' | 'setColumnVisibility' | 'setColumnOrder'> {
+interface UseDataTableReturn<TData extends DataTableRowData = DataTableRowData> {
+  getHeaderGroups: () => DataTableHeaderGroup<TData>[];
+  getRowModel: () => {
+    rows: DataTableRow<TData>[];
+  };
+  getAllColumns: () => DataTableColumn<TData, unknown>[];
+  setColumnVisibility: (updater: Updater<VisibilityState>) => void;
+  setColumnOrder: (updater: Updater<ColumnOrderState$1>) => void;
+  table: DataTableTable<TData>;
+  enablePagination: boolean;
+  getCanNextPage: () => boolean;
+  getCanPreviousPage: () => boolean;
+  nextPage: () => void;
+  previousPage: () => void;
+  getPageCount: () => number;
+  pageIndex: number;
+  pageSize: number;
+  rowCount: number;
+  enableSearch: boolean;
+  getSearch: () => string;
+  onSearchChange: (search: string) => void;
+  enableSorting: boolean;
   getSorting: () => DataTableSortingState | null;
   setSorting: (sortingOrUpdater: DataTableSortingState | ((prev: DataTableSortingState | null) => DataTableSortingState)) => void;
+  enableFiltering: boolean;
   getFilters: () => DataTableFilter[];
   getFilterOptions: <T extends string | string[] | DataTableDateComparisonOperator>(id: string) => DataTableFilterOption<T>[] | null;
   getFilterMeta: (id: string) => DataTableFilter | null;
@@ -581,33 +635,24 @@ interface UseDataTableReturn<TData> extends Pick<ReturnType<typeof useReactTable
   removeFilter: (id: string) => void;
   clearFilters: () => void;
   updateFilter: (filter: DataTableColumnFilter) => void;
-  getSearch: () => string;
-  onSearchChange: (search: string) => void;
   getCommands: () => DataTableCommand[];
   getRowSelection: () => DataTableRowSelectionState;
   onRowClick?: (event: React$2.MouseEvent<HTMLTableRowElement, MouseEvent>, row: TData) => void;
   emptyState: DataTableEmptyState;
   isLoading: boolean;
   showSkeleton: boolean;
-  pageIndex: number;
-  pageSize: number;
-  rowCount: number;
-  enablePagination: boolean;
-  enableFiltering: boolean;
-  enableSorting: boolean;
-  enableSearch: boolean;
   enableColumnVisibility: boolean;
   enableColumnOrder: boolean;
   columnOrder: ColumnOrderState$1;
   setColumnOrderFromArray: (order: string[]) => void;
 }
-declare const useDataTable: <TData>({ rowCount, filters, commands, rowSelection, sorting, filtering, pagination, search, onRowClick, autoResetPageIndex, isLoading, columnVisibility, columnOrder, ...options }: DataTableOptions<TData>) => UseDataTableReturn<TData>;
+declare const useDataTable: <TData extends DataTableRowData = DataTableRowData>({ rowCount, filters, commands, rowSelection, sorting, filtering, pagination, search, onRowClick, autoResetPageIndex, isLoading, columnVisibility, columnOrder, columns, ...options }: DataTableOptions<TData>) => UseDataTableReturn<TData>;
 //#endregion
 //#region src/blocks/data-table/data-table.d.ts
 /**
  * The props of the `DataTable` component.
  */
-interface DataTableProps<TData> {
+interface DataTableProps<TData extends DataTableRowData = DataTableRowData> {
   /**
    * The instance returned by the `useDataTable` hook.
    */
@@ -627,11 +672,11 @@ interface DataTableProps<TData> {
  * The `DataTable` is useful to create tables similar to those in the cms Admin dashboard.
  */
 declare const Root$7: {
-  <TData>({ instance, children, className }: DataTableProps<TData>): React$2.JSX.Element;
+  <TData extends DataTableRowData = import("@tanstack/react-table").RowData>({ instance, children, className }: DataTableProps<TData>): React$2.JSX.Element;
   displayName: string;
 };
 declare const DataTable: typeof Root$7 & {
-  Table: typeof DataTableTable;
+  Table: typeof DataTableTable$1;
   Toolbar: typeof DataTableToolbar;
   Search: typeof DataTableSearch;
   SortingMenu: typeof DataTableSortingMenu;
@@ -643,7 +688,7 @@ declare const DataTable: typeof Root$7 & {
 };
 //#endregion
 //#region src/blocks/data-table/utils/create-data-table-column-helper.d.ts
-declare const createDataTableColumnHelper: <TData>() => DataTableColumnHelper<TData>;
+declare const createDataTableColumnHelper: <TData extends DataTableRowData = DataTableRowData>() => DataTableColumnHelper<TData>;
 //#endregion
 //#region src/blocks/data-table/utils/create-data-table-command-helper.d.ts
 declare const createDataTableCommandHelper: () => {
@@ -1947,6 +1992,60 @@ interface OtpInputProps extends Omit<React$2.HTMLAttributes<HTMLDivElement>, 'on
  */
 declare const OtpInput: React$2.ForwardRefExoticComponent<OtpInputProps & React$2.RefAttributes<HTMLDivElement>>;
 //#endregion
+//#region src/components/permissions/types.d.ts
+export type PermissionAction = 'create' | 'read' | 'edit' | 'delete' | 'publish';
+export interface PermissionCatalogResource<R extends string = string> {
+  key: R;
+  actions: PermissionAction[];
+}
+export interface PermissionCatalog<R extends string = string> {
+  resources: PermissionCatalogResource<R>[];
+  actions: PermissionAction[];
+}
+export type PermissionsMatrixState = Record<string, Partial<Record<PermissionAction, boolean>>>;
+export interface ResourceCategory {
+  id: string;
+  label: string;
+  description?: string;
+  resources: string[];
+}
+//#endregion
+//#region src/components/permissions/PermissionMatrix.d.ts
+interface PermissionMatrixProps {
+  catalog: PermissionCatalog;
+  value: PermissionsMatrixState;
+  onChange?: (value: PermissionsMatrixState) => void;
+  readonly?: boolean;
+  categories?: ResourceCategory[];
+  resourceLabels?: Record<string, string>;
+  resourceDescriptions?: Record<string, string>;
+  className?: string;
+}
+export declare const PermissionMatrix: React$2.FC<PermissionMatrixProps>;
+//#endregion
+//#region src/components/permissions/RoleEditorPanel.d.ts
+interface RoleEditorPanelProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title?: string;
+  description?: string;
+  roleName: string;
+  onRoleNameChange: (name: string) => void;
+  roleDescription?: string;
+  onRoleDescriptionChange?: (description: string) => void;
+  isDefault?: boolean;
+  onIsDefaultChange?: (isDefault: boolean) => void;
+  catalog: PermissionCatalog;
+  permissions: PermissionsMatrixState;
+  onPermissionsChange: (permissions: PermissionsMatrixState) => void;
+  categories?: ResourceCategory[];
+  resourceLabels?: Record<string, string>;
+  resourceDescriptions?: Record<string, string>;
+  onSave: () => void | Promise<void>;
+  isSaving?: boolean;
+}
+export declare const RoleEditorPanel: React$2.FC<RoleEditorPanelProps>;
+//#endregion
 //#region src/components/popover/popover.d.ts
 /**
  * This component is based on the [Radix UI Popover](https://www.radix-ui.com/primitives/docs/components/popover) primitves.
@@ -2013,7 +2112,7 @@ declare const Root$2: {
 /**
  * This component is based on the `div` element and supports all of its props
  */
-declare const Header: {
+declare const Header$1: {
   ({ className, ...props }: React$2.HTMLAttributes<HTMLDivElement>): React$2.JSX.Element;
   displayName: string;
 };
@@ -2031,7 +2130,7 @@ declare const Prompt: typeof Root$2 & {
   Description: React$2.ForwardRefExoticComponent<Omit<AlertDialog.AlertDialogDescriptionProps & React$2.RefAttributes<HTMLParagraphElement>, "ref"> & React$2.RefAttributes<HTMLParagraphElement>>;
   Action: React$2.ForwardRefExoticComponent<Omit<Omit<AlertDialog.AlertDialogActionProps & React$2.RefAttributes<HTMLButtonElement>, "ref">, "asChild"> & React$2.RefAttributes<HTMLButtonElement>>;
   Cancel: React$2.ForwardRefExoticComponent<Omit<Omit<AlertDialog.AlertDialogCancelProps & React$2.RefAttributes<HTMLButtonElement>, "ref">, "asChild"> & React$2.RefAttributes<HTMLButtonElement>>;
-  Header: typeof Header;
+  Header: typeof Header$1;
   Footer: typeof Footer;
 };
 //#endregion
@@ -2327,60 +2426,6 @@ declare const Tooltip: ({ children, content, open, defaultOpen, onOpenChange, de
 interface TooltipProviderProps extends Tooltip$1.TooltipProviderProps {}
 declare const TooltipProvider: ({ children, delayDuration, skipDelayDuration, ...props }: TooltipProviderProps) => React$2.JSX.Element;
 //#endregion
-//#region src/components/permissions/types.d.ts
-export type PermissionAction = 'create' | 'read' | 'edit' | 'delete' | 'publish';
-export interface PermissionCatalogResource<R extends string = string> {
-  key: R;
-  actions: PermissionAction[];
-}
-export interface PermissionCatalog<R extends string = string> {
-  resources: PermissionCatalogResource<R>[];
-  actions: PermissionAction[];
-}
-export type PermissionsMatrixState = Record<string, Partial<Record<PermissionAction, boolean>>>;
-export interface ResourceCategory {
-  id: string;
-  label: string;
-  description?: string;
-  resources: string[];
-}
-//#endregion
-//#region src/components/permissions/PermissionMatrix.d.ts
-interface PermissionMatrixProps {
-  catalog: PermissionCatalog;
-  value: PermissionsMatrixState;
-  onChange?: (value: PermissionsMatrixState) => void;
-  readonly?: boolean;
-  categories?: ResourceCategory[];
-  resourceLabels?: Record<string, string>;
-  resourceDescriptions?: Record<string, string>;
-  className?: string;
-}
-export declare const PermissionMatrix: React$2.FC<PermissionMatrixProps>;
-//#endregion
-//#region src/components/permissions/RoleEditorPanel.d.ts
-interface RoleEditorPanelProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title?: string;
-  description?: string;
-  roleName: string;
-  onRoleNameChange: (name: string) => void;
-  roleDescription?: string;
-  onRoleDescriptionChange?: (description: string) => void;
-  isDefault?: boolean;
-  onIsDefaultChange?: (isDefault: boolean) => void;
-  catalog: PermissionCatalog;
-  permissions: PermissionsMatrixState;
-  onPermissionsChange: (permissions: PermissionsMatrixState) => void;
-  categories?: ResourceCategory[];
-  resourceLabels?: Record<string, string>;
-  resourceDescriptions?: Record<string, string>;
-  onSave: () => void | Promise<void>;
-  isSaving?: boolean;
-}
-export declare const RoleEditorPanel: React$2.FC<RoleEditorPanelProps>;
-//#endregion
 //#region src/hooks/use-prompt/render-prompt.d.ts
 interface RenderPromptProps {
   open: boolean;
@@ -2496,4 +2541,5 @@ export declare const toast: typeof message & {
   dismiss: (id?: number | string) => string | number;
 };
 //#endregion
-export { Avatar, Badge, Button, Calendar, Checkbox, type CheckboxCheckedState, Code, CodeBlock, type ColumnOrderState, Command, CommandBar, Container, ContextMenu, CheckboxItem as ContextMenuCheckboxItem, Content as ContextMenuContent, Group as ContextMenuGroup, Hint as ContextMenuHint, Item as ContextMenuItem, Label as ContextMenuLabel, Portal as ContextMenuPortal, RadioGroup as ContextMenuRadioGroup, RadioItem as ContextMenuRadioItem, Root as ContextMenuRoot, Separator as ContextMenuSeparator, Shortcut as ContextMenuShortcut, SubMenu as ContextMenuSub, SubMenuContent as ContextMenuSubContent, SubMenuTrigger as ContextMenuSubTrigger, Trigger as ContextMenuTrigger, Copy, CurrencyInput, DataTable, type DataTableAction, type DataTableCellContext, type DataTableColumn, type DataTableColumnAlignment, type DataTableColumnDef, type DataTableColumnFilter, type DataTableCommand, type DataTableDateComparisonOperator, type DataTableEmptyState, type DataTableEmptyStateContent, type DataTableEmptyStateProps, type DataTableFilter, type DataTableFilteringState, type DataTableHeaderContext, type DataTableNumberComparisonOperator, type DataTableOptions, type DataTablePaginationState, type DataTableProps, type DataTableRow, type DataTableRowData, type DataTableRowSelectionState, type DataTableSortDirection, type DataTableSortingState, DatePicker, Drawer, DropdownMenu, FocusModal, Heading, Hint$1 as Hint, I18nProvider, IconBadge, IconButton, Input, Kbd, Label$1 as Label, OtpInput, type OtpInputProps, type PermissionMatrixProps, Popover, ProgressAccordion, ProgressTabs, Prompt, RadioGroup$1 as RadioGroup, type RoleEditorPanelProps, Select, Skeleton, StatusBadge, Switch, Table, Tabs, Text, Textarea, Toaster, Tooltip, TooltipProvider, type UseDataTableReturn, type VisibilityState, createDataTableColumnHelper, createDataTableCommandHelper, createDataTableFilterHelper, useDataTable, usePrompt, useToggleState };
+export { Avatar, Badge, Button, Calendar, Checkbox, type CheckboxCheckedState, Code, CodeBlock, type ColumnOrderState, type ColumnVisibilityState, Command, CommandBar, Container, ContextMenu, CheckboxItem as ContextMenuCheckboxItem, Content as ContextMenuContent, Group as ContextMenuGroup, Hint as ContextMenuHint, Item as ContextMenuItem, Label as ContextMenuLabel, Portal as ContextMenuPortal, RadioGroup as ContextMenuRadioGroup, RadioItem as ContextMenuRadioItem, Root as ContextMenuRoot, Separator as ContextMenuSeparator, Shortcut as ContextMenuShortcut, SubMenu as ContextMenuSub, SubMenuContent as ContextMenuSubContent, SubMenuTrigger as ContextMenuSubTrigger, Trigger as ContextMenuTrigger, Copy, CurrencyInput, DataTable, type DataTableAction, type DataTableCell, type DataTableCellContext, type DataTableColumn, type DataTableColumnAlignment, type DataTableColumnDef, type DataTableColumnFilter, type DataTableCommand, type DataTableDateComparisonOperator, type DataTableEmptyState, type DataTableEmptyStateContent, type DataTableEmptyStateProps, type DataTableFeatures, type DataTableFilter, type DataTableFilteringState, type DataTableHeader, type DataTableHeaderContext, type DataTableHeaderGroup, type DataTableNumberComparisonOperator, type DataTableOptions, type DataTablePaginationState, type DataTableProps, type DataTableRow, type DataTableRowData, type DataTableRowSelectionState, type DataTableSortDirection, type DataTableSortingState, type DataTableTable, DatePicker, Drawer, DropdownMenu, FocusModal, Heading, Hint$1 as Hint, I18nProvider, IconBadge, IconButton, Input, Kbd, Label$1 as Label, OtpInput, type OtpInputProps, type PermissionMatrixProps, Popover, ProgressAccordion, ProgressTabs, Prompt, RadioGroup$1 as RadioGroup, type RoleEditorPanelProps, Select, Skeleton, StatusBadge, Switch, Table, Tabs, Text, Textarea, Toaster, Tooltip, TooltipProvider, type UseDataTableReturn, type VisibilityState, createDataTableColumnHelper, createDataTableCommandHelper, createDataTableFilterHelper, useDataTable, usePrompt, useToggleState };
+//# sourceMappingURL=index.d.ts.map

@@ -25,28 +25,33 @@
 ## Checklist
 
 ### Code Quality
+
 - [ ] My code follows the project's coding standards
 - [ ] I have run `cargo clippy` with no warnings
-- [ ] I have run `pnpm typecheck` with no errors
-- [ ] I have run `pnpm lint` with no errors
+- [ ] I have run `bun run typecheck` with no errors
+- [ ] I have run `bun run lint` with no errors
 
 ### Testing
+
 - [ ] I have added tests that prove my fix/feature works
 - [ ] New and existing tests pass locally
 - [ ] I have tested the changes manually
 
 ### API Contract (if applicable)
+
 - [ ] I have run `make check-api` to verify API contract
 - [ ] Every new API method has a corresponding backend route
 - [ ] Every new route has a corresponding frontend API method
 
 ### Security (if applicable)
+
 - [ ] Input validation is present on all new endpoints
 - [ ] No sensitive data is logged
 - [ ] Proper authentication/authorization checks are in place
 - [ ] No SQL injection vulnerabilities introduced
 
 ### Documentation
+
 - [ ] I have updated the README if needed
 - [ ] I have added JSDoc/rustdoc comments for new public APIs
 

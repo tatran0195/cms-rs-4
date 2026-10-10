@@ -7,7 +7,7 @@ import { Label } from '@/components/label';
 import { DatePicker } from './date-picker';
 
 const meta: Meta<typeof DatePicker> = {
-  title: 'Components/DatePickerNew',
+  title: 'Components/DatePicker',
   component: DatePicker,
   parameters: {
     layout: 'centered',

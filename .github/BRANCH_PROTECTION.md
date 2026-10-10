@@ -7,7 +7,7 @@ Configure these rules in GitHub repository settings under **Settings > Branches 
 ### Required Settings
 
 | Setting | Value | Notes |
-|---------|-------|-------|
+| --------- | ------- | ------- |
 | **Require a pull request before merging** | Yes | All changes via PR |
 | **Required approvals** | 1 (minimum) | 2 recommended for prod |
 | **Dismiss stale approvals** | Yes | Re-review after changes |
@@ -53,7 +53,7 @@ Dependency Review         # New dependency analysis
 Slightly relaxed for faster iteration:
 
 | Setting | Value |
-|---------|-------|
+| --------- | ------- |
 | **Require a pull request** | Yes |
 | **Required approvals** | 1 |
 | **Require status checks** | Yes (all CI checks) |
@@ -72,7 +72,7 @@ No protection rules — developers can push freely.
 ## Release Branches (`release/*`)
 
 | Setting | Value |
-|---------|-------|
+| --------- | ------- |
 | **Require a pull request** | Yes |
 | **Required approvals** | 2 |
 | **Require status checks** | Yes (all checks) |

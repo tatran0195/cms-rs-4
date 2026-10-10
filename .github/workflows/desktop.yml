@@ -29,16 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Setup Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -62,10 +54,10 @@ jobs:
             patchelf
 
       - name: Install JS deps
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build SPA
-        run: pnpm --filter "@cms/types" --filter "@cms/utils" --filter "@cms/schemas" --filter "@cms/api" --filter "@cms/stores" --filter "@cms/expressions" --filter "@cms/crdt" build && pnpm --filter @cms/web exec vite build
+        run: bun --filter "@cms/types" --filter "@cms/utils" --filter "@cms/schemas" --filter "@cms/api" --filter "@cms/stores" --filter "@cms/expressions" --filter "@cms/crdt" build && bun --filter @cms/web vite build
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0

@@ -1,10 +1,10 @@
 import { Adjustments } from '@cms/icons';
-import type { Column } from '@tanstack/react-table';
 import { Checkbox } from '@/components/checkbox';
 import { DropdownMenu } from '@/components/dropdown-menu';
 import { IconButton } from '@/components/icon-button';
 import { Tooltip } from '@/components/tooltip';
 import { useDataTableContext } from '../context/use-data-table-context';
+import type { DataTableColumn } from '../types';
 
 interface DataTableColumnVisibilityMenuProps {
   className?: string;
@@ -20,16 +20,16 @@ const DataTableColumnVisibilityMenu = ({ className, tooltip }: DataTableColumnVi
 
   const columns = instance.getAllColumns().filter((column) => column.getCanHide());
 
-  const handleToggleColumn = (column: Column<unknown, unknown>) => {
+  const handleToggleColumn = (column: DataTableColumn) => {
     column.toggleVisibility();
   };
 
   const handleToggleAll = (value: boolean) => {
-    instance.setColumnVisibility(Object.fromEntries(columns.map((column: Column<unknown, unknown>) => [column.id, value])));
+    instance.setColumnVisibility(Object.fromEntries(columns.map((column: DataTableColumn) => [column.id, value])));
   };
 
-  const allColumnsVisible = columns.every((column: Column<unknown, unknown>) => column.getIsVisible());
-  const someColumnsVisible = columns.some((column: Column<unknown, unknown>) => column.getIsVisible());
+  const allColumnsVisible = columns.every((column: DataTableColumn) => column.getIsVisible());
+  const someColumnsVisible = columns.some((column: DataTableColumn) => column.getIsVisible());
 
   const trigger = (
     <DropdownMenu.Trigger asChild>
@@ -58,7 +58,7 @@ const DataTableColumnVisibilityMenu = ({ className, tooltip }: DataTableColumnVi
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <div className="max-h-[250px] overflow-y-auto">
-          {columns.map((column: Column<unknown, unknown>) => {
+          {columns.map((column: DataTableColumn) => {
             const meta = column.columnDef.meta as { name?: string } | undefined;
 
             return (

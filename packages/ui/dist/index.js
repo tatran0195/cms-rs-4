@@ -12,7 +12,7 @@ import { I18nProvider as I18nProvider$1, useButton, useCalendar, useCalendarCell
 import { useCalendarState, useDateFieldState, useDatePickerState, useTimeFieldState } from "react-stately";
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { createColumnHelper, createCoreRowModel, createFacetedRowModel, createFacetedUniqueValues, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, flexRender, stockFeatures, useTable } from "@tanstack/react-table";
 import { CSS } from "@dnd-kit/utilities";
 import hljs from "highlight.js";
 import copy from "copy-to-clipboard";
@@ -2470,18 +2470,18 @@ const Row$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ 
 	...props
 }));
 Row$1.displayName = "Table.Row";
-const Cell = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("td", {
+const Cell$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("td", {
 	ref,
 	className: clx("h-12 py-0 pl-0 pr-6", className),
 	...props
 }));
-Cell.displayName = "Table.Cell";
-const Header$3 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("thead", {
+Cell$1.displayName = "Table.Cell";
+const Header$4 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("thead", {
 	ref,
 	className: clx("border-ui-border-base txt-compact-small-plus [&_tr]:bg-ui-bg-subtle [&_tr]:hover:bg-ui-bg-subtle border-y", className),
 	...props
 }));
-Header$3.displayName = "Table.Header";
+Header$4.displayName = "Table.Header";
 const HeaderCell = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("th", {
 	ref,
 	className: clx("txt-compact-small-plus h-12 py-0 pl-0 pr-6 text-left", className),
@@ -2561,8 +2561,8 @@ const Pagination = React$1.forwardRef(({ className, count, pageSize, pageCount, 
 Pagination.displayName = "Table.Pagination";
 const Table = Object.assign(Root$6, {
 	Row: Row$1,
-	Cell,
-	Header: Header$3,
+	Cell: Cell$1,
+	Header: Header$4,
 	HeaderCell,
 	Body: Body$1,
 	Pagination
@@ -2807,6 +2807,15 @@ const Text = React$1.forwardRef(({ className, asChild = false, as = "p", size = 
 Text.displayName = "Text";
 //#endregion
 //#region src/blocks/data-table/types.ts
+const dataTableFeatures = {
+	...stockFeatures,
+	coreRowModel: createCoreRowModel(),
+	filteredRowModel: createFilteredRowModel(),
+	sortedRowModel: createSortedRowModel(),
+	paginatedRowModel: createPaginatedRowModel(),
+	facetedRowModel: createFacetedRowModel(),
+	facetedUniqueValues: createFacetedUniqueValues()
+};
 const DataTableEmptyState = {
 	EMPTY: "EMPTY",
 	FILTERED_EMPTY: "FILTERED_EMPTY",
@@ -3319,7 +3328,7 @@ const DataTable = Object.assign(Root$5, {
 });
 //#endregion
 //#region src/blocks/data-table/use-data-table.tsx
-const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, filtering, pagination, search, onRowClick, autoResetPageIndex = true, isLoading = false, columnVisibility, columnOrder, ...options }) => {
+const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, filtering, pagination, search, onRowClick, autoResetPageIndex = true, isLoading = false, columnVisibility, columnOrder, columns, ...options }) => {
 	const { state: sortingState, onSortingChange } = sorting ?? {};
 	const { state: filteringState, onFilteringChange } = filtering ?? {};
 	const { state: paginationState, onPaginationChange } = pagination ?? {};
@@ -3362,9 +3371,11 @@ const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, 
 		const value = typeof updaterOrValue === "function" ? updaterOrValue(columnOrderState ?? []) : updaterOrValue;
 		onColumnOrderChange(value);
 	} : void 0, [onColumnOrderChange, columnOrderState]);
-	const instance = useReactTable({
+	const instance = useTable({
 		...options,
-		getCoreRowModel: getCoreRowModel(),
+		features: dataTableFeatures,
+		columns: columns ?? [],
+		data: options.data ?? [],
 		state: {
 			rowSelection: rowSelectionState ?? {},
 			sorting: sortingState ? [sortingState] : void 0,
@@ -3388,12 +3399,12 @@ const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, 
 		manualPagination: true,
 		manualFiltering: true
 	});
-	const getSorting = React$1.useCallback(() => instance.getState().sorting?.[0] ?? null, [instance]);
+	const getSorting = React$1.useCallback(() => instance.state.sorting?.[0] ?? null, [instance]);
 	const setSorting = React$1.useCallback((sortingOrUpdater) => {
-		const currentSort = instance.getState().sorting?.[0] ?? null;
+		const currentSort = instance.state.sorting?.[0] ?? null;
 		const newSorting = typeof sortingOrUpdater === "function" ? sortingOrUpdater(currentSort) : sortingOrUpdater;
 		autoResetPageIndexHandler()?.();
-		instance.setSorting([newSorting]);
+		instance.setSorting(newSorting ? [newSorting] : []);
 	}, [instance, autoResetPageIndexHandler]);
 	const getFilters = React$1.useCallback(() => filters ?? [], [filters]);
 	const getFilterOptions = React$1.useCallback((id) => {
@@ -3403,7 +3414,7 @@ const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, 
 	}, [getFilters]);
 	const getFilterMeta = React$1.useCallback((id) => getFilters().find((filter) => filter.id === id) || null, [getFilters]);
 	const getFiltering = React$1.useCallback(() => {
-		const state = instance.getState().columnFilters ?? [];
+		const state = instance.state.columnFilters ?? [];
 		return Object.fromEntries(state.map((filter) => [filter.id, filter.value]));
 	}, [instance]);
 	const addFilter = React$1.useCallback((filter) => {
@@ -3469,7 +3480,7 @@ const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, 
 		debouncedSearchChange?.(search);
 	}, [debouncedSearchChange]);
 	const getCommands = React$1.useCallback(() => commands ?? [], [commands]);
-	const getRowSelection = React$1.useCallback(() => instance.getState().rowSelection, [instance]);
+	const getRowSelection = React$1.useCallback(() => instance.state.rowSelection ?? {}, [instance]);
 	const rows = instance.getRowModel().rows;
 	const emptyState = React$1.useMemo(() => {
 		const hasRows = rows.length > 0;
@@ -3499,14 +3510,15 @@ const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, 
 		getAllColumns: instance.getAllColumns,
 		setColumnVisibility: instance.setColumnVisibility,
 		setColumnOrder: instance.setColumnOrder,
+		table: instance,
 		enablePagination,
 		getCanNextPage: instance.getCanNextPage,
 		getCanPreviousPage: instance.getCanPreviousPage,
 		nextPage: instance.nextPage,
 		previousPage: instance.previousPage,
 		getPageCount: instance.getPageCount,
-		pageIndex: instance.getState()?.pagination?.pageIndex ?? 0,
-		pageSize: instance.getState()?.pagination?.pageSize ?? 10,
+		pageIndex: instance.state?.pagination?.pageIndex ?? 0,
+		pageSize: instance.state?.pagination?.pageSize ?? 10,
 		rowCount,
 		enableSearch,
 		getSearch,
@@ -3531,7 +3543,7 @@ const useDataTable = ({ rowCount = 0, filters, commands, rowSelection, sorting, 
 		showSkeleton,
 		enableColumnVisibility,
 		enableColumnOrder,
-		columnOrder: instance.getState().columnOrder,
+		columnOrder: instance.state.columnOrder ?? [],
 		setColumnOrderFromArray
 	};
 };
@@ -3669,11 +3681,11 @@ const createDataTableColumnHelper = () => {
 		select: (props) => display({
 			id: "select",
 			header: props?.header ? props.header : (ctx) => /* @__PURE__ */ jsx(DataTableSelectHeader, { ctx }),
-			cell: props?.cell ? props.cell : (ctx) => /* @__PURE__ */ jsx(DataTableSelectCell, { ctx })
+			cell: props?.cell ? props.cell : (ctx) => /* @__PURE__ */ jsx(DataTableSelectCell, { ctx }),
+			...props
 		})
 	};
 };
-createColumnHelper().accessor("name", { meta: {} });
 //#endregion
 //#region src/blocks/data-table/utils/create-data-table-command-helper.ts
 const createDataTableCommandHelper = () => ({ command: (command) => command });
@@ -4091,7 +4103,7 @@ const Meta = ({ className, ...props }) => /* @__PURE__ */ jsx("div", {
 	...props
 });
 Meta.displayName = "CodeBlock.Header.Meta";
-const Header$2 = Object.assign(HeaderComponent, { Meta });
+const Header$3 = Object.assign(HeaderComponent, { Meta });
 const Body = ({ className, children, ...props }) => {
 	const { active } = useCodeBlockContext();
 	const lines = React$1.useMemo(() => {
@@ -4195,7 +4207,7 @@ const Body = ({ className, children, ...props }) => {
 Body.displayName = "CodeBlock.Body";
 const CodeBlock = Object.assign(Root$4, {
 	Body,
-	Header: Header$2,
+	Header: Header$3,
 	Meta
 });
 //#endregion
@@ -4924,464 +4936,6 @@ const OtpInput = React$1.forwardRef(({ "aria-invalid": ariaInvalid, "aria-label"
 });
 OtpInput.displayName = "OtpInput";
 //#endregion
-//#region src/components/progress-accordion/progress-accordion.tsx
-/**
-* This component is based on the [Radix UI Accordion](https://radix-ui.com/primitives/docs/components/accordion) primitves.
-*/
-const Root$3 = (props) => /* @__PURE__ */ jsx(Accordion.Root, { ...props });
-Root$3.displayName = "ProgressAccordion";
-const Item$2 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Accordion.Item, {
-	ref,
-	className: clx("border-ui-border-base border-b last-of-type:border-b-0", className),
-	...props
-}));
-Item$2.displayName = "ProgressAccordion.Item";
-const ProgressIndicator$1 = ({ status, ...props }) => {
-	const Icon = React$1.useMemo(() => {
-		switch (status) {
-			case "not-started": return CircleDottedLine;
-			case "in-progress": return CircleHalfSolid;
-			case "completed": return CheckCircleSolid;
-			default: return CircleDottedLine;
-		}
-	}, [status]);
-	return /* @__PURE__ */ jsx("span", {
-		className: "text-ui-fg-muted group-data-[state=open]:text-ui-fg-interactive flex h-12 w-12 items-center justify-center",
-		...props,
-		children: /* @__PURE__ */ jsx(Icon, {})
-	});
-};
-ProgressIndicator$1.displayName = "ProgressAccordion.ProgressIndicator";
-const Header$1 = React$1.forwardRef(({ className, status = "not-started", children, ...props }, ref) => /* @__PURE__ */ jsxs(Accordion.Header, {
-	ref,
-	className: clx("h3-core text-ui-fg-base group flex w-full flex-1 items-center gap-4 px-6", className),
-	...props,
-	children: [
-		/* @__PURE__ */ jsx(ProgressIndicator$1, { status }),
-		children,
-		/* @__PURE__ */ jsx(Accordion.Trigger, {
-			asChild: true,
-			className: "ml-auto",
-			children: /* @__PURE__ */ jsx(IconButton, {
-				variant: "transparent",
-				children: /* @__PURE__ */ jsx(Plus, { className: "transform transition-transform group-data-[state=open]:rotate-45" })
-			})
-		})
-	]
-}));
-Header$1.displayName = "ProgressAccordion.Header";
-const Content$2 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Accordion.Content, {
-	ref,
-	className: clx("overflow-hidden", "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down pl-[88px] pr-6", className),
-	...props
-}));
-Content$2.displayName = "ProgressAccordion.Content";
-const ProgressAccordion = Object.assign(Root$3, {
-	Item: Item$2,
-	Header: Header$1,
-	Content: Content$2
-});
-//#endregion
-//#region src/components/progress-tabs/progress-tabs.tsx
-/**
-* This component is based on the [Radix UI Tabs](https://radix-ui.com/primitives/docs/components/tabs) primitves.
-*
-*/
-const ProgressTabsRoot = (props) => /* @__PURE__ */ jsx(Tabs$1.Root, { ...props });
-ProgressTabsRoot.displayName = "ProgressTabs";
-const ProgressIndicator = ({ status, className, ...props }) => {
-	const Icon = React$1.useMemo(() => {
-		switch (status) {
-			case "not-started": return CircleDottedLine;
-			case "in-progress": return CircleHalfSolid;
-			case "completed": return CheckCircleSolid;
-			default: return CircleDottedLine;
-		}
-	}, [status]);
-	return /* @__PURE__ */ jsx("span", {
-		className: clx("text-ui-fg-muted group-data-[state=active]/trigger:text-ui-fg-interactive", className),
-		...props,
-		children: /* @__PURE__ */ jsx(Icon, {})
-	});
-};
-ProgressIndicator.displayName = "ProgressTabs.ProgressIndicator";
-const ProgressTabsTrigger = React$1.forwardRef(({ className, children, status = "not-started", ...props }, ref) => /* @__PURE__ */ jsxs(Tabs$1.Trigger, {
-	ref,
-	className: clx("txt-compact-small-plus transition-fg text-ui-fg-muted bg-ui-bg-subtle border-r-ui-border-base inline-flex h-[52px] w-full max-w-[200px] flex-1 items-center gap-x-2 border-r px-4 text-left outline-none", "group/trigger overflow-hidden text-ellipsis whitespace-nowrap", "disabled:bg-ui-bg-disabled disabled:text-ui-fg-muted", "hover:bg-ui-bg-subtle-hover", "focus-visible:bg-ui-bg-base focus:z-[1]", "data-[state=active]:text-ui-fg-base data-[state=active]:bg-ui-bg-base", className),
-	...props,
-	children: [/* @__PURE__ */ jsx(ProgressIndicator, { status }), children]
-}));
-ProgressTabsTrigger.displayName = "ProgressTabs.Trigger";
-const ProgressTabsList = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.List, {
-	ref,
-	className: clx("flex items-center", className),
-	...props
-}));
-ProgressTabsList.displayName = "ProgressTabs.List";
-const ProgressTabsContent = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.Content, {
-	ref,
-	className: clx("outline-none", className),
-	...props
-}));
-ProgressTabsContent.displayName = "ProgressTabs.Content";
-const ProgressTabs = Object.assign(ProgressTabsRoot, {
-	Trigger: ProgressTabsTrigger,
-	List: ProgressTabsList,
-	Content: ProgressTabsContent
-});
-//#endregion
-//#region src/components/prompt/prompt.tsx
-const PromptContext = React$1.createContext({ variant: "danger" });
-const usePromptContext = () => {
-	const context = React$1.useContext(PromptContext);
-	if (!context) throw new Error("usePromptContext must be used within a PromptProvider");
-	return context;
-};
-const PromptProvider = ({ variant, children }) => /* @__PURE__ */ jsx(PromptContext.Provider, {
-	value: { variant },
-	children
-});
-/**
-* This component is based on the [Radix UI Alert Dialog](https://www.radix-ui.com/primitives/docs/components/alert-dialog) primitives.
-*/
-const Root$2 = ({ variant = "danger", ...props }) => /* @__PURE__ */ jsx(PromptProvider, {
-	variant,
-	children: /* @__PURE__ */ jsx(AlertDialog.Root, { ...props })
-});
-Root$2.displayName = "Prompt";
-const Trigger$1 = AlertDialog.Trigger;
-Trigger$1.displayName = "Prompt.Trigger";
-const Portal$2 = (props) => /* @__PURE__ */ jsx(AlertDialog.AlertDialogPortal, { ...props });
-Portal$2.displayName = "Prompt.Portal";
-const Overlay = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Overlay, {
-	ref,
-	className: clx("bg-ui-bg-overlay fixed inset-0", "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", className),
-	...props
-}));
-Overlay.displayName = "Prompt.Overlay";
-const Title = React$1.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Title, {
-	ref,
-	className: clx(className),
-	...props,
-	asChild: true,
-	children: /* @__PURE__ */ jsx(Heading, {
-		level: "h2",
-		className: "text-ui-fg-base",
-		children
-	})
-}));
-Title.displayName = "Prompt.Title";
-const Content$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxs(Portal$2, { children: [/* @__PURE__ */ jsx(Overlay, {}), /* @__PURE__ */ jsx(AlertDialog.Content, {
-	ref,
-	className: clx("bg-ui-bg-base shadow-elevation-flyout fixed left-[50%] top-[50%] flex w-full max-w-[400px] translate-x-[-50%] translate-y-[-50%] flex-col rounded-lg border focus-visible:outline-none", "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] duration-200", className),
-	...props
-})] }));
-Content$1.displayName = "Prompt.Content";
-const Description = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Description, {
-	ref,
-	className: clx("text-ui-fg-subtle txt-compact-medium", className),
-	...props
-}));
-Description.displayName = "Prompt.Description";
-const Action = React$1.forwardRef(({ className, children, type, ...props }, ref) => {
-	const { variant } = usePromptContext();
-	return /* @__PURE__ */ jsx(AlertDialog.Action, {
-		ref,
-		className,
-		...props,
-		asChild: true,
-		children: /* @__PURE__ */ jsx(Button, {
-			size: "small",
-			type,
-			variant: variant === "danger" ? "danger" : "primary",
-			children
-		})
-	});
-});
-Action.displayName = "Prompt.Action";
-const Cancel = React$1.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Cancel, {
-	ref,
-	className: clx(className),
-	...props,
-	asChild: true,
-	children: /* @__PURE__ */ jsx(Button, {
-		size: "small",
-		variant: "secondary",
-		children
-	})
-}));
-Cancel.displayName = "Prompt.Cancel";
-/**
-* This component is based on the `div` element and supports all of its props
-*/
-const Header = ({ className, ...props }) => /* @__PURE__ */ jsx("div", {
-	className: clx("flex flex-col gap-y-1 px-6 pt-6", className),
-	...props
-});
-Header.displayName = "Prompt.Header";
-/**
-* This component is based on the `div` element and supports all of its props
-*/
-const Footer = ({ className, ...props }) => /* @__PURE__ */ jsx("div", {
-	className: clx("flex items-center justify-end gap-x-2 p-6", className),
-	...props
-});
-Footer.displayName = "Prompt.Footer";
-const Prompt = Object.assign(Root$2, {
-	Trigger: Trigger$1,
-	Content: Content$1,
-	Title,
-	Description,
-	Action,
-	Cancel,
-	Header,
-	Footer
-});
-//#endregion
-//#region src/components/radio-group/radio-group.tsx
-/**
-* This component is based on the [Radix UI Radio Group](https://www.radix-ui.com/primitives/docs/components/radio-group) primitives.
-*/
-const Root$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(RadioGroup$2.Root, {
-	className: clx("grid gap-2", className),
-	...props,
-	ref
-}));
-Root$1.displayName = "RadioGroup";
-const Indicator = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(RadioGroup$2.Indicator, {
-	ref,
-	className: clx("flex items-center justify-center", className),
-	...props,
-	children: /* @__PURE__ */ jsx("div", { className: clx("bg-ui-bg-base shadow-details-contrast-on-bg-interactive h-1.5 w-1.5 rounded-full") })
-}));
-Indicator.displayName = "RadioGroup.Indicator";
-const Item$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(RadioGroup$2.Item, {
-	ref,
-	className: clx("group relative flex h-5 w-5 items-center justify-center outline-none", className),
-	...props,
-	children: /* @__PURE__ */ jsx("div", {
-		className: clx("shadow-borders-base bg-ui-bg-base transition-fg flex h-[14px] w-[14px] items-center justify-center rounded-full", "group-hover:group-enabled:group-data-[state=unchecked]:bg-ui-bg-base-hover", "group-data-[state=checked]:bg-ui-bg-interactive group-data-[state=checked]:shadow-borders-interactive-with-shadow", "group-focus-visible:!shadow-borders-interactive-with-focus", "group-disabled:cursor-not-allowed group-disabled:opacity-50"),
-		children: /* @__PURE__ */ jsx(Indicator, {})
-	})
-}));
-Item$1.displayName = "RadioGroup.Item";
-/**
-* This component is based on the [Radix UI Radio Group Item](https://www.radix-ui.com/primitives/docs/components/radio-group#item) primitives.
-*/
-const ChoiceBox = React$1.forwardRef(({ className, id, label, description, value, ...props }, ref) => {
-	const generatedId = React$1.useId();
-	if (!id) id = generatedId;
-	const descriptionId = `${id}-description`;
-	return /* @__PURE__ */ jsxs(RadioGroup$2.Item, {
-		ref,
-		className: clx("shadow-borders-base bg-ui-bg-base focus-visible:shadow-borders-interactive-with-focus transition-fg group flex items-start gap-x-2 rounded-lg p-3 outline-none", "hover:enabled:bg-ui-bg-base-hover", "data-[state=checked]:shadow-borders-interactive-with-shadow", "group-disabled:cursor-not-allowed group-disabled:opacity-50", className),
-		...props,
-		value,
-		id,
-		"aria-describedby": descriptionId,
-		children: [/* @__PURE__ */ jsx("div", {
-			className: "flex h-5 w-5 items-center justify-center",
-			children: /* @__PURE__ */ jsx("div", {
-				className: clx("shadow-borders-base bg-ui-bg-base group-data-[state=checked]:bg-ui-bg-interactive group-data-[state=checked]:shadow-borders-interactive-with-shadow transition-fg flex h-3.5 w-3.5 items-center justify-center rounded-full", "group-hover:group-enabled:group-data-[state=unchecked]:bg-ui-bg-base-hover"),
-				children: /* @__PURE__ */ jsx(Indicator, {})
-			})
-		}), /* @__PURE__ */ jsxs("div", {
-			className: "flex flex-col items-start",
-			children: [/* @__PURE__ */ jsx(Label$1, {
-				htmlFor: id,
-				size: "small",
-				weight: "plus",
-				className: "group-disabled:text-ui-fg-disabled cursor-pointer group-disabled:cursor-not-allowed",
-				children: label
-			}), /* @__PURE__ */ jsx(Hint$1, {
-				className: "txt-small text-ui-fg-subtle group-disabled:text-ui-fg-disabled text-left",
-				id: descriptionId,
-				children: description
-			})]
-		})]
-	});
-});
-ChoiceBox.displayName = "RadioGroup.ChoiceBox";
-const RadioGroup$1 = Object.assign(Root$1, {
-	Item: Item$1,
-	ChoiceBox
-});
-//#endregion
-//#region src/components/status-badge/status-badge.tsx
-const statusBadgeVariants = cva({
-	base: "flex items-center justify-center w-5 h-[18px] [&_div]:w-2 [&_div]:h-2 [&_div]:rounded-sm",
-	variants: { color: {
-		green: "[&_div]:bg-ui-tag-green-icon",
-		red: "[&_div]:bg-ui-tag-red-icon",
-		orange: "[&_div]:bg-ui-tag-orange-icon",
-		blue: "[&_div]:bg-ui-tag-blue-icon",
-		purple: "[&_div]:bg-ui-tag-purple-icon",
-		grey: "[&_div]:bg-ui-tag-neutral-icon"
-	} },
-	defaultVariants: { color: "grey" }
-});
-/**
-* This component is based on the span element and supports all of its props
-*/
-const StatusBadge = React$1.forwardRef(({ children, className, color = "grey", ...props }, ref) => /* @__PURE__ */ jsxs("span", {
-	ref,
-	className: clx("txt-compact-xsmall-plus bg-ui-bg-subtle text-ui-fg-subtle border-ui-border-base box-border flex w-fit select-none items-center overflow-hidden rounded-md border pl-0 pr-1 leading-none", className),
-	...props,
-	children: [/* @__PURE__ */ jsx("div", {
-		role: "presentation",
-		className: statusBadgeVariants({ color }),
-		children: /* @__PURE__ */ jsx("div", {})
-	}), children]
-}));
-StatusBadge.displayName = "StatusBadge";
-//#endregion
-//#region src/components/switch/switch.tsx
-const switchVariants = cva({
-	base: "bg-ui-bg-switch-off hover:bg-ui-bg-switch-off-hover data-[state=unchecked]:hover:after:bg-switch-off-hover-gradient before:shadow-details-switch-background focus-visible:shadow-details-switch-background-focus data-[state=checked]:bg-ui-bg-interactive disabled:opacity-50 group relative inline-flex items-center rounded-full outline-none transition-all before:absolute before:inset-0 before:rounded-full before:content-[''] after:absolute after:inset-0 after:rounded-full after:content-[''] disabled:cursor-not-allowed",
-	variants: { size: {
-		small: "h-[16px] w-[28px]",
-		base: "h-[18px] w-[32px]"
-	} },
-	defaultVariants: { size: "base" }
-});
-const thumbVariants = cva({
-	base: "bg-ui-fg-on-color shadow-details-switch-handle pointer-events-none h-[14px] w-[14px] rounded-full transition-all",
-	variants: { size: {
-		small: "h-[12px] w-[12px] data-[state=checked]:translate-x-3.5 data-[state=unchecked]:translate-x-0.5",
-		base: "h-[14px] w-[14px] transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0.5"
-	} },
-	defaultVariants: { size: "base" }
-});
-/**
-* This component is based on the [Radix UI Switch](https://www.radix-ui.com/primitives/docs/components/switch) primitive.
-*/
-const Switch = React$1.forwardRef(({ className, size = "base", ...props }, ref) => /* @__PURE__ */ jsx(Switch$1.Root, {
-	className: clx(switchVariants({ size }), className),
-	...props,
-	ref,
-	children: /* @__PURE__ */ jsx(Switch$1.Thumb, { className: clx(thumbVariants({ size })) })
-}));
-Switch.displayName = "Switch";
-//#endregion
-//#region src/components/tabs/tabs.tsx
-/**
-* This component is based on the [Radix UI Tabs](https://radix-ui.com/primitives/docs/components/tabs) primitves
-*/
-const TabsRoot = (props) => /* @__PURE__ */ jsx(Tabs$1.Root, { ...props });
-TabsRoot.displayName = "Tabs";
-const TabsTrigger = React$1.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.Trigger, {
-	ref,
-	className: clx("txt-compact-small-plus transition-fg text-ui-fg-subtle inline-flex items-center justify-center rounded-full border border-transparent bg-transparent px-2.5 py-1 outline-none", "hover:text-ui-fg-base", "focus-visible:border-ui-border-interactive focus-visible:!shadow-borders-focus focus-visible:bg-ui-bg-base", "data-[state=active]:text-ui-fg-base data-[state=active]:bg-ui-bg-base data-[state=active]:shadow-elevation-card-rest", className),
-	...props,
-	children
-}));
-TabsTrigger.displayName = "Tabs.Trigger";
-const TabsList = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.List, {
-	ref,
-	className: clx("flex items-center gap-2", className),
-	...props
-}));
-TabsList.displayName = "Tabs.List";
-const TabsContent = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.Content, {
-	ref,
-	className: clx("outline-none", className),
-	...props
-}));
-TabsContent.displayName = "Tabs.Content";
-const Tabs = Object.assign(TabsRoot, {
-	Trigger: TabsTrigger,
-	List: TabsList,
-	Content: TabsContent
-});
-//#endregion
-//#region src/components/textarea/textarea.tsx
-/**
-* This component is based on the `textarea` element and supports all of its props
-*/
-const Textarea = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("textarea", {
-	ref,
-	className: clx(inputBaseStyles, "txt-small min-h-[60px] w-full px-2 py-1.5", className),
-	...props
-}));
-Textarea.displayName = "Textarea";
-//#endregion
-//#region src/components/toast/toast.tsx
-/**
-* This component is based on the [Sonner](https://sonner.emilkowal.ski/toast) toast library.
-*/
-const Toast = ({ id, variant = "info", title, icon: _icon, description, action, dismissable = true }) => {
-	let icon = _icon;
-	if (!_icon) switch (variant) {
-		case "success":
-			icon = /* @__PURE__ */ jsx(CheckCircleSolid, { className: "text-ui-tag-green-icon" });
-			break;
-		case "warning":
-			icon = /* @__PURE__ */ jsx(ExclamationCircleSolid, { className: "text-ui-tag-orange-icon" });
-			break;
-		case "error":
-			icon = /* @__PURE__ */ jsx(XCircleSolid, { className: "text-ui-tag-red-icon" });
-			break;
-		case "loading":
-			icon = /* @__PURE__ */ jsx(Spinner, { className: "text-ui-tag-blue-icon animate-spin" });
-			break;
-		case "info": icon = /* @__PURE__ */ jsx(InformationCircleSolid, { className: "text-ui-fg-base" });
-	}
-	return /* @__PURE__ */ jsxs("div", {
-		className: "shadow-elevation-flyout bg-ui-bg-component flex w-fit min-w-[360px] max-w-[440px] gap-x-3 overflow-hidden rounded-lg p-3",
-		children: [/* @__PURE__ */ jsxs("div", {
-			className: clx("grid flex-1 items-center gap-x-2", {
-				"grid-cols-[20px_1fr]": !!icon,
-				"grid-cols-1": !icon,
-				"items-start": !!description
-			}),
-			children: [!!icon && /* @__PURE__ */ jsx("span", {
-				className: "flex size-5 items-center justify-center",
-				"aria-hidden": true,
-				children: icon
-			}), /* @__PURE__ */ jsxs("div", {
-				className: "flex flex-col gap-y-3",
-				children: [/* @__PURE__ */ jsxs("div", {
-					className: "flex flex-col",
-					children: [/* @__PURE__ */ jsx("span", {
-						className: "txt-compact-small-plus text-ui-fg-base",
-						children: title
-					}), description && /* @__PURE__ */ jsx("span", {
-						className: "txt-small text-ui-fg-subtle text-pretty",
-						children: description
-					})]
-				}), !!action && /* @__PURE__ */ jsx("button", {
-					type: "button",
-					className: clx("txt-compact-small-plus text-ui-fg-base bg-ui-bg-base flex w-fit items-center rounded-[4px] transition-colors", "focus-visible:shadow-borders-focus", "hover:text-ui-fg-subtle", "disabled:text-ui-fg-disabled", { "text-ui-fg-error": action.variant === "destructive" }),
-					onClick: action.onClick,
-					children: action.label
-				})]
-			})]
-		}), !!dismissable && /* @__PURE__ */ jsx(IconButton, {
-			size: "2xsmall",
-			variant: "transparent",
-			type: "button",
-			onClick: () => toast$1.dismiss(id),
-			children: /* @__PURE__ */ jsx(XMark, {})
-		})]
-	});
-};
-//#endregion
-//#region src/components/toaster/toaster.tsx
-/**
-* This component is based on the [Toaster component of the Sonner library](https://sonner.emilkowal.ski/toaster).
-*/
-const Toaster = ({ position = "bottom-right", gap = 12, offset = 24, duration, ...props }) => {
-	const primitiveProps = {
-		...props,
-		position,
-		gap,
-		offset,
-		cn: clx,
-		toastOptions: { duration }
-	};
-	return /* @__PURE__ */ jsx(Toaster$1, { ...primitiveProps });
-};
-//#endregion
 //#region src/components/permissions/PermissionMatrix.tsx
 const ACTION_LABELS = {
 	create: "Create",
@@ -5396,9 +4950,7 @@ const PermissionMatrix = ({ catalog, value, onChange, readonly = false, categori
 		for (const item of catalog.resources) map.set(item.key, item.actions);
 		return map;
 	}, [catalog.resources]);
-	const allResourceKeys = React$1.useMemo(() => {
-		return catalog.resources.map((r) => r.key);
-	}, [catalog.resources]);
+	const allResourceKeys = React$1.useMemo(() => catalog.resources.map((r) => r.key), [catalog.resources]);
 	const groupedSections = React$1.useMemo(() => {
 		if (categories && categories.length > 0) {
 			const assigned = /* @__PURE__ */ new Set();
@@ -5596,110 +5148,566 @@ const PermissionMatrix = ({ catalog, value, onChange, readonly = false, categori
 	});
 };
 //#endregion
+//#region src/components/switch/switch.tsx
+const switchVariants = cva({
+	base: "bg-ui-bg-switch-off hover:bg-ui-bg-switch-off-hover data-[state=unchecked]:hover:after:bg-switch-off-hover-gradient before:shadow-details-switch-background focus-visible:shadow-details-switch-background-focus data-[state=checked]:bg-ui-bg-interactive disabled:opacity-50 group relative inline-flex items-center rounded-full outline-none transition-all before:absolute before:inset-0 before:rounded-full before:content-[''] after:absolute after:inset-0 after:rounded-full after:content-[''] disabled:cursor-not-allowed",
+	variants: { size: {
+		small: "h-[16px] w-[28px]",
+		base: "h-[18px] w-[32px]"
+	} },
+	defaultVariants: { size: "base" }
+});
+const thumbVariants = cva({
+	base: "bg-ui-fg-on-color shadow-details-switch-handle pointer-events-none h-[14px] w-[14px] rounded-full transition-all",
+	variants: { size: {
+		small: "h-[12px] w-[12px] data-[state=checked]:translate-x-3.5 data-[state=unchecked]:translate-x-0.5",
+		base: "h-[14px] w-[14px] transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0.5"
+	} },
+	defaultVariants: { size: "base" }
+});
+/**
+* This component is based on the [Radix UI Switch](https://www.radix-ui.com/primitives/docs/components/switch) primitive.
+*/
+const Switch = React$1.forwardRef(({ className, size = "base", ...props }, ref) => /* @__PURE__ */ jsx(Switch$1.Root, {
+	className: clx(switchVariants({ size }), className),
+	...props,
+	ref,
+	children: /* @__PURE__ */ jsx(Switch$1.Thumb, { className: clx(thumbVariants({ size })) })
+}));
+Switch.displayName = "Switch";
+//#endregion
+//#region src/components/textarea/textarea.tsx
+/**
+* This component is based on the `textarea` element and supports all of its props
+*/
+const Textarea = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("textarea", {
+	ref,
+	className: clx(inputBaseStyles, "txt-small min-h-[60px] w-full px-2 py-1.5", className),
+	...props
+}));
+Textarea.displayName = "Textarea";
+//#endregion
 //#region src/components/permissions/RoleEditorPanel.tsx
-const RoleEditorPanel = ({ open, onOpenChange, title = "Configure Role", description = "Define role metadata and resource access permissions.", roleName, onRoleNameChange, roleDescription = "", onRoleDescriptionChange, isDefault = false, onIsDefaultChange, catalog, permissions, onPermissionsChange, categories, resourceLabels, resourceDescriptions, onSave, isSaving = false }) => {
-	return /* @__PURE__ */ jsx(Drawer, {
-		open,
-		onOpenChange,
-		children: /* @__PURE__ */ jsxs(Drawer.Content, {
-			className: "max-w-3xl w-full",
-			children: [
-				/* @__PURE__ */ jsxs(Drawer.Header, { children: [/* @__PURE__ */ jsx(Drawer.Title, { children: title }), /* @__PURE__ */ jsx(Drawer.Description, { children: description })] }),
-				/* @__PURE__ */ jsxs(Drawer.Body, {
-					className: "space-y-6 py-4 overflow-y-auto max-h-[calc(100vh-200px)]",
-					children: [/* @__PURE__ */ jsxs("div", {
-						className: "space-y-4",
-						children: [
-							/* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsxs(Label$1, {
-								htmlFor: "role-name",
-								className: "text-sm font-medium",
-								children: ["Role Name ", /* @__PURE__ */ jsx("span", {
-									className: "text-rose-500",
-									children: "*"
+const RoleEditorPanel = ({ open, onOpenChange, title = "Configure Role", description = "Define role metadata and resource access permissions.", roleName, onRoleNameChange, roleDescription = "", onRoleDescriptionChange, isDefault = false, onIsDefaultChange, catalog, permissions, onPermissionsChange, categories, resourceLabels, resourceDescriptions, onSave, isSaving = false }) => /* @__PURE__ */ jsx(Drawer, {
+	open,
+	onOpenChange,
+	children: /* @__PURE__ */ jsxs(Drawer.Content, {
+		className: "max-w-3xl w-full",
+		children: [
+			/* @__PURE__ */ jsxs(Drawer.Header, { children: [/* @__PURE__ */ jsx(Drawer.Title, { children: title }), /* @__PURE__ */ jsx(Drawer.Description, { children: description })] }),
+			/* @__PURE__ */ jsxs(Drawer.Body, {
+				className: "space-y-6 py-4 overflow-y-auto max-h-[calc(100vh-200px)]",
+				children: [/* @__PURE__ */ jsxs("div", {
+					className: "space-y-4",
+					children: [
+						/* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsxs(Label$1, {
+							htmlFor: "role-name",
+							className: "text-sm font-medium",
+							children: ["Role Name ", /* @__PURE__ */ jsx("span", {
+								className: "text-rose-500",
+								children: "*"
+							})]
+						}), /* @__PURE__ */ jsx(Input, {
+							id: "role-name",
+							value: roleName,
+							onChange: (e) => onRoleNameChange(e.target.value),
+							placeholder: "e.g. Content Reviewer",
+							className: "mt-1.5",
+							"data-testid": "role-name-input"
+						})] }),
+						/* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsx(Label$1, {
+							htmlFor: "role-description",
+							className: "text-sm font-medium",
+							children: "Description"
+						}), /* @__PURE__ */ jsx(Textarea, {
+							id: "role-description",
+							value: roleDescription,
+							onChange: (e) => onRoleDescriptionChange?.(e.target.value),
+							placeholder: "Briefly describe the responsibilities of this role",
+							rows: 2,
+							className: "mt-1.5 resize-none",
+							"data-testid": "role-description-input"
+						})] }),
+						onIsDefaultChange && /* @__PURE__ */ jsxs("div", {
+							className: "flex items-center justify-between p-3.5 border border-ui-border-base rounded-md bg-ui-bg-subtle/40",
+							children: [/* @__PURE__ */ jsxs("div", {
+								className: "flex flex-col",
+								children: [/* @__PURE__ */ jsx("span", {
+									className: "text-sm font-medium text-ui-fg-base",
+									children: "Default Role for New Members"
+								}), /* @__PURE__ */ jsx(Text, {
+									size: "small",
+									className: "text-ui-fg-muted",
+									children: "Automatically assign this role to new members joining the workspace or project."
 								})]
-							}), /* @__PURE__ */ jsx(Input, {
-								id: "role-name",
-								value: roleName,
-								onChange: (e) => onRoleNameChange(e.target.value),
-								placeholder: "e.g. Content Reviewer",
-								className: "mt-1.5",
-								"data-testid": "role-name-input"
-							})] }),
-							/* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsx(Label$1, {
-								htmlFor: "role-description",
-								className: "text-sm font-medium",
-								children: "Description"
-							}), /* @__PURE__ */ jsx(Textarea, {
-								id: "role-description",
-								value: roleDescription,
-								onChange: (e) => onRoleDescriptionChange?.(e.target.value),
-								placeholder: "Briefly describe the responsibilities of this role",
-								rows: 2,
-								className: "mt-1.5 resize-none",
-								"data-testid": "role-description-input"
-							})] }),
-							onIsDefaultChange && /* @__PURE__ */ jsxs("div", {
-								className: "flex items-center justify-between p-3.5 border border-ui-border-base rounded-md bg-ui-bg-subtle/40",
-								children: [/* @__PURE__ */ jsxs("div", {
-									className: "flex flex-col",
-									children: [/* @__PURE__ */ jsx("span", {
-										className: "text-sm font-medium text-ui-fg-base",
-										children: "Default Role for New Members"
-									}), /* @__PURE__ */ jsx(Text, {
-										size: "small",
-										className: "text-ui-fg-muted",
-										children: "Automatically assign this role to new members joining the workspace or project."
-									})]
-								}), /* @__PURE__ */ jsx(Switch, {
-									checked: isDefault,
-									onCheckedChange: onIsDefaultChange,
-									"data-testid": "role-default-switch"
-								})]
-							})
-						]
-					}), /* @__PURE__ */ jsxs("div", {
-						className: "space-y-2 pt-2",
-						children: [/* @__PURE__ */ jsx("div", {
-							className: "flex items-center justify-between",
-							children: /* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsx(Label$1, {
-								className: "text-sm font-medium",
-								children: "Permissions Matrix"
-							}), /* @__PURE__ */ jsx(Text, {
-								size: "small",
-								className: "text-ui-fg-muted",
-								children: "Toggle fine-grained actions per resource."
-							})] })
-						}), /* @__PURE__ */ jsx(PermissionMatrix, {
-							catalog,
-							value: permissions,
-							onChange: onPermissionsChange,
-							categories,
-							resourceLabels,
-							resourceDescriptions
-						})]
-					})]
-				}),
-				/* @__PURE__ */ jsxs(Drawer.Footer, {
-					className: "flex items-center justify-end gap-3 pt-3 border-t border-ui-border-base",
-					children: [/* @__PURE__ */ jsx(Drawer.Close, {
-						asChild: true,
-						children: /* @__PURE__ */ jsx(Button, {
-							variant: "secondary",
-							disabled: isSaving,
-							children: "Cancel"
+							}), /* @__PURE__ */ jsx(Switch, {
+								checked: isDefault,
+								onCheckedChange: onIsDefaultChange,
+								"data-testid": "role-default-switch"
+							})]
 						})
-					}), /* @__PURE__ */ jsx(Button, {
-						variant: "primary",
-						onClick: onSave,
-						isLoading: isSaving,
-						disabled: isSaving || !roleName.trim(),
-						"data-testid": "role-save-button",
-						children: "Save Role"
+					]
+				}), /* @__PURE__ */ jsxs("div", {
+					className: "space-y-2 pt-2",
+					children: [/* @__PURE__ */ jsx("div", {
+						className: "flex items-center justify-between",
+						children: /* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsx(Label$1, {
+							className: "text-sm font-medium",
+							children: "Permissions Matrix"
+						}), /* @__PURE__ */ jsx(Text, {
+							size: "small",
+							className: "text-ui-fg-muted",
+							children: "Toggle fine-grained actions per resource."
+						})] })
+					}), /* @__PURE__ */ jsx(PermissionMatrix, {
+						catalog,
+						value: permissions,
+						onChange: onPermissionsChange,
+						categories,
+						resourceLabels,
+						resourceDescriptions
 					})]
-				})
-			]
+				})]
+			}),
+			/* @__PURE__ */ jsxs(Drawer.Footer, {
+				className: "flex items-center justify-end gap-3 pt-3 border-t border-ui-border-base",
+				children: [/* @__PURE__ */ jsx(Drawer.Close, {
+					asChild: true,
+					children: /* @__PURE__ */ jsx(Button, {
+						variant: "secondary",
+						disabled: isSaving,
+						children: "Cancel"
+					})
+				}), /* @__PURE__ */ jsx(Button, {
+					variant: "primary",
+					onClick: onSave,
+					isLoading: isSaving,
+					disabled: isSaving || !roleName.trim(),
+					"data-testid": "role-save-button",
+					children: "Save Role"
+				})]
+			})
+		]
+	})
+});
+//#endregion
+//#region src/components/progress-accordion/progress-accordion.tsx
+/**
+* This component is based on the [Radix UI Accordion](https://radix-ui.com/primitives/docs/components/accordion) primitves.
+*/
+const Root$3 = (props) => /* @__PURE__ */ jsx(Accordion.Root, { ...props });
+Root$3.displayName = "ProgressAccordion";
+const Item$2 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Accordion.Item, {
+	ref,
+	className: clx("border-ui-border-base border-b last-of-type:border-b-0", className),
+	...props
+}));
+Item$2.displayName = "ProgressAccordion.Item";
+const ProgressIndicator$1 = ({ status, ...props }) => {
+	const Icon = React$1.useMemo(() => {
+		switch (status) {
+			case "not-started": return CircleDottedLine;
+			case "in-progress": return CircleHalfSolid;
+			case "completed": return CheckCircleSolid;
+			default: return CircleDottedLine;
+		}
+	}, [status]);
+	return /* @__PURE__ */ jsx("span", {
+		className: "text-ui-fg-muted group-data-[state=open]:text-ui-fg-interactive flex h-12 w-12 items-center justify-center",
+		...props,
+		children: /* @__PURE__ */ jsx(Icon, {})
+	});
+};
+ProgressIndicator$1.displayName = "ProgressAccordion.ProgressIndicator";
+const Header$2 = React$1.forwardRef(({ className, status = "not-started", children, ...props }, ref) => /* @__PURE__ */ jsxs(Accordion.Header, {
+	ref,
+	className: clx("h3-core text-ui-fg-base group flex w-full flex-1 items-center gap-4 px-6", className),
+	...props,
+	children: [
+		/* @__PURE__ */ jsx(ProgressIndicator$1, { status }),
+		children,
+		/* @__PURE__ */ jsx(Accordion.Trigger, {
+			asChild: true,
+			className: "ml-auto",
+			children: /* @__PURE__ */ jsx(IconButton, {
+				variant: "transparent",
+				children: /* @__PURE__ */ jsx(Plus, { className: "transform transition-transform group-data-[state=open]:rotate-45" })
+			})
+		})
+	]
+}));
+Header$2.displayName = "ProgressAccordion.Header";
+const Content$2 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Accordion.Content, {
+	ref,
+	className: clx("overflow-hidden", "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down pl-[88px] pr-6", className),
+	...props
+}));
+Content$2.displayName = "ProgressAccordion.Content";
+const ProgressAccordion = Object.assign(Root$3, {
+	Item: Item$2,
+	Header: Header$2,
+	Content: Content$2
+});
+//#endregion
+//#region src/components/progress-tabs/progress-tabs.tsx
+/**
+* This component is based on the [Radix UI Tabs](https://radix-ui.com/primitives/docs/components/tabs) primitves.
+*
+*/
+const ProgressTabsRoot = (props) => /* @__PURE__ */ jsx(Tabs$1.Root, { ...props });
+ProgressTabsRoot.displayName = "ProgressTabs";
+const ProgressIndicator = ({ status, className, ...props }) => {
+	const Icon = React$1.useMemo(() => {
+		switch (status) {
+			case "not-started": return CircleDottedLine;
+			case "in-progress": return CircleHalfSolid;
+			case "completed": return CheckCircleSolid;
+			default: return CircleDottedLine;
+		}
+	}, [status]);
+	return /* @__PURE__ */ jsx("span", {
+		className: clx("text-ui-fg-muted group-data-[state=active]/trigger:text-ui-fg-interactive", className),
+		...props,
+		children: /* @__PURE__ */ jsx(Icon, {})
+	});
+};
+ProgressIndicator.displayName = "ProgressTabs.ProgressIndicator";
+const ProgressTabsTrigger = React$1.forwardRef(({ className, children, status = "not-started", ...props }, ref) => /* @__PURE__ */ jsxs(Tabs$1.Trigger, {
+	ref,
+	className: clx("txt-compact-small-plus transition-fg text-ui-fg-muted bg-ui-bg-subtle border-r-ui-border-base inline-flex h-[52px] w-full max-w-[200px] flex-1 items-center gap-x-2 border-r px-4 text-left outline-none", "group/trigger overflow-hidden text-ellipsis whitespace-nowrap", "disabled:bg-ui-bg-disabled disabled:text-ui-fg-muted", "hover:bg-ui-bg-subtle-hover", "focus-visible:bg-ui-bg-base focus:z-[1]", "data-[state=active]:text-ui-fg-base data-[state=active]:bg-ui-bg-base", className),
+	...props,
+	children: [/* @__PURE__ */ jsx(ProgressIndicator, { status }), children]
+}));
+ProgressTabsTrigger.displayName = "ProgressTabs.Trigger";
+const ProgressTabsList = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.List, {
+	ref,
+	className: clx("flex items-center", className),
+	...props
+}));
+ProgressTabsList.displayName = "ProgressTabs.List";
+const ProgressTabsContent = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.Content, {
+	ref,
+	className: clx("outline-none", className),
+	...props
+}));
+ProgressTabsContent.displayName = "ProgressTabs.Content";
+const ProgressTabs = Object.assign(ProgressTabsRoot, {
+	Trigger: ProgressTabsTrigger,
+	List: ProgressTabsList,
+	Content: ProgressTabsContent
+});
+//#endregion
+//#region src/components/prompt/prompt.tsx
+const PromptContext = React$1.createContext({ variant: "danger" });
+const usePromptContext = () => {
+	const context = React$1.useContext(PromptContext);
+	if (!context) throw new Error("usePromptContext must be used within a PromptProvider");
+	return context;
+};
+const PromptProvider = ({ variant, children }) => /* @__PURE__ */ jsx(PromptContext.Provider, {
+	value: { variant },
+	children
+});
+/**
+* This component is based on the [Radix UI Alert Dialog](https://www.radix-ui.com/primitives/docs/components/alert-dialog) primitives.
+*/
+const Root$2 = ({ variant = "danger", ...props }) => /* @__PURE__ */ jsx(PromptProvider, {
+	variant,
+	children: /* @__PURE__ */ jsx(AlertDialog.Root, { ...props })
+});
+Root$2.displayName = "Prompt";
+const Trigger$1 = AlertDialog.Trigger;
+Trigger$1.displayName = "Prompt.Trigger";
+const Portal$2 = (props) => /* @__PURE__ */ jsx(AlertDialog.AlertDialogPortal, { ...props });
+Portal$2.displayName = "Prompt.Portal";
+const Overlay = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Overlay, {
+	ref,
+	className: clx("bg-ui-bg-overlay fixed inset-0", "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", className),
+	...props
+}));
+Overlay.displayName = "Prompt.Overlay";
+const Title = React$1.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Title, {
+	ref,
+	className: clx(className),
+	...props,
+	asChild: true,
+	children: /* @__PURE__ */ jsx(Heading, {
+		level: "h2",
+		className: "text-ui-fg-base",
+		children
+	})
+}));
+Title.displayName = "Prompt.Title";
+const Content$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxs(Portal$2, { children: [/* @__PURE__ */ jsx(Overlay, {}), /* @__PURE__ */ jsx(AlertDialog.Content, {
+	ref,
+	className: clx("bg-ui-bg-base shadow-elevation-flyout fixed left-[50%] top-[50%] flex w-full max-w-[400px] translate-x-[-50%] translate-y-[-50%] flex-col rounded-lg border focus-visible:outline-none", "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] duration-200", className),
+	...props
+})] }));
+Content$1.displayName = "Prompt.Content";
+const Description = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Description, {
+	ref,
+	className: clx("text-ui-fg-subtle txt-compact-medium", className),
+	...props
+}));
+Description.displayName = "Prompt.Description";
+const Action = React$1.forwardRef(({ className, children, type, ...props }, ref) => {
+	const { variant } = usePromptContext();
+	return /* @__PURE__ */ jsx(AlertDialog.Action, {
+		ref,
+		className,
+		...props,
+		asChild: true,
+		children: /* @__PURE__ */ jsx(Button, {
+			size: "small",
+			type,
+			variant: variant === "danger" ? "danger" : "primary",
+			children
 		})
 	});
+});
+Action.displayName = "Prompt.Action";
+const Cancel = React$1.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AlertDialog.Cancel, {
+	ref,
+	className: clx(className),
+	...props,
+	asChild: true,
+	children: /* @__PURE__ */ jsx(Button, {
+		size: "small",
+		variant: "secondary",
+		children
+	})
+}));
+Cancel.displayName = "Prompt.Cancel";
+/**
+* This component is based on the `div` element and supports all of its props
+*/
+const Header$1 = ({ className, ...props }) => /* @__PURE__ */ jsx("div", {
+	className: clx("flex flex-col gap-y-1 px-6 pt-6", className),
+	...props
+});
+Header$1.displayName = "Prompt.Header";
+/**
+* This component is based on the `div` element and supports all of its props
+*/
+const Footer = ({ className, ...props }) => /* @__PURE__ */ jsx("div", {
+	className: clx("flex items-center justify-end gap-x-2 p-6", className),
+	...props
+});
+Footer.displayName = "Prompt.Footer";
+const Prompt = Object.assign(Root$2, {
+	Trigger: Trigger$1,
+	Content: Content$1,
+	Title,
+	Description,
+	Action,
+	Cancel,
+	Header: Header$1,
+	Footer
+});
+//#endregion
+//#region src/components/radio-group/radio-group.tsx
+/**
+* This component is based on the [Radix UI Radio Group](https://www.radix-ui.com/primitives/docs/components/radio-group) primitives.
+*/
+const Root$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(RadioGroup$2.Root, {
+	className: clx("grid gap-2", className),
+	...props,
+	ref
+}));
+Root$1.displayName = "RadioGroup";
+const Indicator = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(RadioGroup$2.Indicator, {
+	ref,
+	className: clx("flex items-center justify-center", className),
+	...props,
+	children: /* @__PURE__ */ jsx("div", { className: clx("bg-ui-bg-base shadow-details-contrast-on-bg-interactive h-1.5 w-1.5 rounded-full") })
+}));
+Indicator.displayName = "RadioGroup.Indicator";
+const Item$1 = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(RadioGroup$2.Item, {
+	ref,
+	className: clx("group relative flex h-5 w-5 items-center justify-center outline-none", className),
+	...props,
+	children: /* @__PURE__ */ jsx("div", {
+		className: clx("shadow-borders-base bg-ui-bg-base transition-fg flex h-[14px] w-[14px] items-center justify-center rounded-full", "group-hover:group-enabled:group-data-[state=unchecked]:bg-ui-bg-base-hover", "group-data-[state=checked]:bg-ui-bg-interactive group-data-[state=checked]:shadow-borders-interactive-with-shadow", "group-focus-visible:!shadow-borders-interactive-with-focus", "group-disabled:cursor-not-allowed group-disabled:opacity-50"),
+		children: /* @__PURE__ */ jsx(Indicator, {})
+	})
+}));
+Item$1.displayName = "RadioGroup.Item";
+/**
+* This component is based on the [Radix UI Radio Group Item](https://www.radix-ui.com/primitives/docs/components/radio-group#item) primitives.
+*/
+const ChoiceBox = React$1.forwardRef(({ className, id, label, description, value, ...props }, ref) => {
+	const generatedId = React$1.useId();
+	if (!id) id = generatedId;
+	const descriptionId = `${id}-description`;
+	return /* @__PURE__ */ jsxs(RadioGroup$2.Item, {
+		ref,
+		className: clx("shadow-borders-base bg-ui-bg-base focus-visible:shadow-borders-interactive-with-focus transition-fg group flex items-start gap-x-2 rounded-lg p-3 outline-none", "hover:enabled:bg-ui-bg-base-hover", "data-[state=checked]:shadow-borders-interactive-with-shadow", "group-disabled:cursor-not-allowed group-disabled:opacity-50", className),
+		...props,
+		value,
+		id,
+		"aria-describedby": descriptionId,
+		children: [/* @__PURE__ */ jsx("div", {
+			className: "flex h-5 w-5 items-center justify-center",
+			children: /* @__PURE__ */ jsx("div", {
+				className: clx("shadow-borders-base bg-ui-bg-base group-data-[state=checked]:bg-ui-bg-interactive group-data-[state=checked]:shadow-borders-interactive-with-shadow transition-fg flex h-3.5 w-3.5 items-center justify-center rounded-full", "group-hover:group-enabled:group-data-[state=unchecked]:bg-ui-bg-base-hover"),
+				children: /* @__PURE__ */ jsx(Indicator, {})
+			})
+		}), /* @__PURE__ */ jsxs("div", {
+			className: "flex flex-col items-start",
+			children: [/* @__PURE__ */ jsx(Label$1, {
+				htmlFor: id,
+				size: "small",
+				weight: "plus",
+				className: "group-disabled:text-ui-fg-disabled cursor-pointer group-disabled:cursor-not-allowed",
+				children: label
+			}), /* @__PURE__ */ jsx(Hint$1, {
+				className: "txt-small text-ui-fg-subtle group-disabled:text-ui-fg-disabled text-left",
+				id: descriptionId,
+				children: description
+			})]
+		})]
+	});
+});
+ChoiceBox.displayName = "RadioGroup.ChoiceBox";
+const RadioGroup$1 = Object.assign(Root$1, {
+	Item: Item$1,
+	ChoiceBox
+});
+//#endregion
+//#region src/components/status-badge/status-badge.tsx
+const statusBadgeVariants = cva({
+	base: "flex items-center justify-center w-5 h-[18px] [&_div]:w-2 [&_div]:h-2 [&_div]:rounded-sm",
+	variants: { color: {
+		green: "[&_div]:bg-ui-tag-green-icon",
+		red: "[&_div]:bg-ui-tag-red-icon",
+		orange: "[&_div]:bg-ui-tag-orange-icon",
+		blue: "[&_div]:bg-ui-tag-blue-icon",
+		purple: "[&_div]:bg-ui-tag-purple-icon",
+		grey: "[&_div]:bg-ui-tag-neutral-icon"
+	} },
+	defaultVariants: { color: "grey" }
+});
+/**
+* This component is based on the span element and supports all of its props
+*/
+const StatusBadge = React$1.forwardRef(({ children, className, color = "grey", ...props }, ref) => /* @__PURE__ */ jsxs("span", {
+	ref,
+	className: clx("txt-compact-xsmall-plus bg-ui-bg-subtle text-ui-fg-subtle border-ui-border-base box-border flex w-fit select-none items-center overflow-hidden rounded-md border pl-0 pr-1 leading-none", className),
+	...props,
+	children: [/* @__PURE__ */ jsx("div", {
+		role: "presentation",
+		className: statusBadgeVariants({ color }),
+		children: /* @__PURE__ */ jsx("div", {})
+	}), children]
+}));
+StatusBadge.displayName = "StatusBadge";
+//#endregion
+//#region src/components/tabs/tabs.tsx
+/**
+* This component is based on the [Radix UI Tabs](https://radix-ui.com/primitives/docs/components/tabs) primitves
+*/
+const TabsRoot = (props) => /* @__PURE__ */ jsx(Tabs$1.Root, { ...props });
+TabsRoot.displayName = "Tabs";
+const TabsTrigger = React$1.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.Trigger, {
+	ref,
+	className: clx("txt-compact-small-plus transition-fg text-ui-fg-subtle inline-flex items-center justify-center rounded-full border border-transparent bg-transparent px-2.5 py-1 outline-none", "hover:text-ui-fg-base", "focus-visible:border-ui-border-interactive focus-visible:!shadow-borders-focus focus-visible:bg-ui-bg-base", "data-[state=active]:text-ui-fg-base data-[state=active]:bg-ui-bg-base data-[state=active]:shadow-elevation-card-rest", className),
+	...props,
+	children
+}));
+TabsTrigger.displayName = "Tabs.Trigger";
+const TabsList = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.List, {
+	ref,
+	className: clx("flex items-center gap-2", className),
+	...props
+}));
+TabsList.displayName = "Tabs.List";
+const TabsContent = React$1.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(Tabs$1.Content, {
+	ref,
+	className: clx("outline-none", className),
+	...props
+}));
+TabsContent.displayName = "Tabs.Content";
+const Tabs = Object.assign(TabsRoot, {
+	Trigger: TabsTrigger,
+	List: TabsList,
+	Content: TabsContent
+});
+//#endregion
+//#region src/components/toast/toast.tsx
+/**
+* This component is based on the [Sonner](https://sonner.emilkowal.ski/toast) toast library.
+*/
+const Toast = ({ id, variant = "info", title, icon: _icon, description, action, dismissable = true }) => {
+	let icon = _icon;
+	if (!_icon) switch (variant) {
+		case "success":
+			icon = /* @__PURE__ */ jsx(CheckCircleSolid, { className: "text-ui-tag-green-icon" });
+			break;
+		case "warning":
+			icon = /* @__PURE__ */ jsx(ExclamationCircleSolid, { className: "text-ui-tag-orange-icon" });
+			break;
+		case "error":
+			icon = /* @__PURE__ */ jsx(XCircleSolid, { className: "text-ui-tag-red-icon" });
+			break;
+		case "loading":
+			icon = /* @__PURE__ */ jsx(Spinner, { className: "text-ui-tag-blue-icon animate-spin" });
+			break;
+		case "info": icon = /* @__PURE__ */ jsx(InformationCircleSolid, { className: "text-ui-fg-base" });
+	}
+	return /* @__PURE__ */ jsxs("div", {
+		className: "shadow-elevation-flyout bg-ui-bg-component flex w-fit min-w-[360px] max-w-[440px] gap-x-3 overflow-hidden rounded-lg p-3",
+		children: [/* @__PURE__ */ jsxs("div", {
+			className: clx("grid flex-1 items-center gap-x-2", {
+				"grid-cols-[20px_1fr]": !!icon,
+				"grid-cols-1": !icon,
+				"items-start": !!description
+			}),
+			children: [!!icon && /* @__PURE__ */ jsx("span", {
+				className: "flex size-5 items-center justify-center",
+				"aria-hidden": true,
+				children: icon
+			}), /* @__PURE__ */ jsxs("div", {
+				className: "flex flex-col gap-y-3",
+				children: [/* @__PURE__ */ jsxs("div", {
+					className: "flex flex-col",
+					children: [/* @__PURE__ */ jsx("span", {
+						className: "txt-compact-small-plus text-ui-fg-base",
+						children: title
+					}), description && /* @__PURE__ */ jsx("span", {
+						className: "txt-small text-ui-fg-subtle text-pretty",
+						children: description
+					})]
+				}), !!action && /* @__PURE__ */ jsx("button", {
+					type: "button",
+					className: clx("txt-compact-small-plus text-ui-fg-base bg-ui-bg-base flex w-fit items-center rounded-[4px] transition-colors", "focus-visible:shadow-borders-focus", "hover:text-ui-fg-subtle", "disabled:text-ui-fg-disabled", { "text-ui-fg-error": action.variant === "destructive" }),
+					onClick: action.onClick,
+					children: action.label
+				})]
+			})]
+		}), !!dismissable && /* @__PURE__ */ jsx(IconButton, {
+			size: "2xsmall",
+			variant: "transparent",
+			type: "button",
+			onClick: () => toast$1.dismiss(id),
+			children: /* @__PURE__ */ jsx(XMark, {})
+		})]
+	});
+};
+//#endregion
+//#region src/components/toaster/toaster.tsx
+/**
+* This component is based on the [Toaster component of the Sonner library](https://sonner.emilkowal.ski/toaster).
+*/
+const Toaster = ({ position = "bottom-right", gap = 12, offset = 24, duration, ...props }) => {
+	const primitiveProps = {
+		...props,
+		position,
+		gap,
+		offset,
+		cn: clx,
+		toastOptions: { duration }
+	};
+	return /* @__PURE__ */ jsx(Toaster$1, { ...primitiveProps });
 };
 //#endregion
 //#region src/hooks/use-prompt/render-prompt.tsx
@@ -5922,3 +5930,5 @@ const toast = Object.assign(message, {
 });
 //#endregion
 export { Alert, Avatar, Badge, Button, Calendar, Checkbox, Code, CodeBlock, Command, CommandBar, Container, ContextMenu, CheckboxItem as ContextMenuCheckboxItem, Content as ContextMenuContent, Group as ContextMenuGroup, Hint as ContextMenuHint, Item as ContextMenuItem, Label as ContextMenuLabel, Portal as ContextMenuPortal, RadioGroup as ContextMenuRadioGroup, RadioItem as ContextMenuRadioItem, Root as ContextMenuRoot, Separator as ContextMenuSeparator, Shortcut as ContextMenuShortcut, SubMenu as ContextMenuSub, SubMenuContent as ContextMenuSubContent, SubMenuTrigger as ContextMenuSubTrigger, Trigger as ContextMenuTrigger, Copy, CurrencyInput, DataTable, DatePicker, Divider, Drawer, DropdownMenu, FocusModal, Heading, Hint$1 as Hint, I18nProvider, IconBadge, IconButton, InlineTip, Input, Kbd, Label$1 as Label, OtpInput, PermissionMatrix, Popover, ProgressAccordion, ProgressTabs, Prompt, RadioGroup$1 as RadioGroup, RoleEditorPanel, Select, Skeleton, StatusBadge, Switch, Table, Tabs, Text, Textarea, Toast, Toaster, Tooltip, TooltipProvider, clx, createDataTableColumnHelper, createDataTableCommandHelper, createDataTableFilterHelper, toast, useDataTable, usePrompt, useToggleState };
+
+//# sourceMappingURL=index.js.map

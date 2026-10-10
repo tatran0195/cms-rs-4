@@ -5,7 +5,7 @@ import { Button } from '@/components/button';
 import { Calendar } from '@/components/calendar/calendar';
 
 const meta: Meta<typeof Calendar> = {
-  title: 'Components/CalendarNew',
+  title: 'Components/Calendar',
   component: Calendar,
   parameters: {
     layout: 'centered',

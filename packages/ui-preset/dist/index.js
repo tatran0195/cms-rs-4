@@ -684,4 +684,4 @@ const typography = {
 //#endregion
 export { FONT_FAMILY_MONO, FONT_FAMILY_SANS, colors, effects, theme, typography };
 
-//# sourceMappingURL=index.mjs.map
+//# sourceMappingURL=index.js.map

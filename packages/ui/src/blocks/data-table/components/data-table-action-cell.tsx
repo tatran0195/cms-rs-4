@@ -1,17 +1,16 @@
 'use client';
 
 import { EllipsisHorizontal } from '@cms/icons';
-import type { CellContext } from '@tanstack/react-table';
 import * as React from 'react';
-import type { DataTableActionColumnDefMeta } from '@/blocks/data-table/types';
+import type { DataTableActionColumnDefMeta, DataTableCellContext, DataTableRowData } from '@/blocks/data-table/types';
 import { DropdownMenu } from '@/components/dropdown-menu';
 import { IconButton } from '@/components/icon-button';
 
-interface DataTableActionCellProps<TData> {
-  ctx: CellContext<TData, unknown>;
+interface DataTableActionCellProps<TData extends DataTableRowData = DataTableRowData> {
+  ctx: DataTableCellContext<TData, unknown>;
 }
 
-const DataTableActionCell = <TData,>({ ctx }: DataTableActionCellProps<TData>) => {
+const DataTableActionCell = <TData extends DataTableRowData = DataTableRowData>({ ctx }: DataTableActionCellProps<TData>) => {
   const meta = ctx.column.columnDef.meta as DataTableActionColumnDefMeta<TData> | undefined;
   const actions = meta?.___actions;
 

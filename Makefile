@@ -54,20 +54,20 @@ help: ## Show this help menu with categorized targets
 
 dev: db ## Start backend (127.0.0.1:3000) and web frontend (127.0.0.1:5173) concurrently
 ifeq ($(OS),Windows_NT)
-	@Write-Host 'Starting cms Development Stack (Zero Docker)...' -ForegroundColor Green; Write-Host '  Backend:  http://127.0.0.1:3000' -ForegroundColor Cyan; Write-Host '  Frontend: http://127.0.0.1:5173' -ForegroundColor Cyan; $$backend = Start-Process cargo -ArgumentList 'run -p cms-server --bin cms-server' -PassThru; try { pnpm dev:web } finally { Write-Host 'Stopping backend server...' -ForegroundColor Yellow; Stop-Process -Id $$backend.Id -Force -ErrorAction SilentlyContinue }
+	@Write-Host 'Starting cms Development Stack (Zero Docker)...' -ForegroundColor Green; Write-Host '  Backend:  http://127.0.0.1:3000' -ForegroundColor Cyan; Write-Host '  Frontend: http://127.0.0.1:5173' -ForegroundColor Cyan; $$backend = Start-Process cargo -ArgumentList 'run -p cms-server --bin cms-server' -PassThru; try { bun run dev:web } finally { Write-Host 'Stopping backend server...' -ForegroundColor Yellow; Stop-Process -Id $$backend.Id -Force -ErrorAction SilentlyContinue }
 else
 	@cargo run -p cms-server --bin cms-server & pid=$$!; \
 	trap 'kill $$pid 2>/dev/null' EXIT; \
-	pnpm dev:web
+	bun run dev:web
 endif
 
 dev-split: db ## Start backend in a separate terminal window and web in current terminal
 ifeq ($(OS),Windows_NT)
 	@Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cargo run -p cms-server --bin cms-server'
-	pnpm dev:web
+	bun run dev:web
 else
 	@cargo run -p cms-server --bin cms-server & \
-	pnpm dev:web
+	bun run dev:web
 endif
 
 dev-backend: db ## Start backend server only (http://127.0.0.1:3000)
@@ -77,31 +77,31 @@ dev-backend-watch: db ## Start backend with auto-reload on code change (cargo-wa
 	cargo watch --why --watch crates --exec "run -p cms-server --bin cms-server"
 
 dev-frontend: ## Start web frontend only (http://127.0.0.1:5173)
-	pnpm dev:web
+	bun run dev:web
 
 dev-storybook: ## Start Storybook UI component workshop (http://localhost:6006)
-	pnpm dev:storybook
+	bun run dev:storybook
 
 dev-simulator: ## Start synthetic hospital simulator admin UI
-	pnpm --filter @cms/simulator-admin dev
+	bun --filter @cms/simulator-admin dev
 
 dev-mobile: ## Start Expo Metro bundler for mobile
-	pnpm --filter @cms/mobile start
+	bun --filter @cms/mobile start
 
 dev-camp: ## Start dedicated Camp mobile app on LAN port 8083
-	pnpm --filter @cms/mobile-camp start -- --host lan --port $(CAMP_MOBILE_PORT)
+	bun --filter @cms/mobile-camp start -- --host lan --port $(CAMP_MOBILE_PORT)
 
 dev-staff: ## Start Staff mobile app on LAN port 8082
-	pnpm --filter @cms/mobile-staff start -- --host lan --port 8082
+	bun --filter @cms/mobile-staff start -- --host lan --port 8082
 
 dev-tv: ## Start TV display app
-	pnpm --filter @cms/tv start
+	bun --filter @cms/tv start
 
 dev-desktop: ## Start Tauri desktop application
 ifeq ($(OS),Windows_NT)
-	cd apps/desktop; pnpm tauri dev
+	cd apps/desktop; bun run tauri dev
 else
-	cd apps/desktop && pnpm tauri dev
+	cd apps/desktop && bun run tauri dev
 endif
 
 dev-edge: ## Run cms-edge appliance locally for offline-mode testing
@@ -200,16 +200,16 @@ build-backend-dev: ## Build Rust backend binary in debug mode (fast)
 	cargo build -p cms-server
 
 build-frontend: ## Build web SPA production bundle
-	pnpm --filter=@cms/web build
+	bun --filter @cms/web build
 
 build-storybook: ## Build Storybook static assets
-	pnpm build:storybook
+	bun run build:storybook
 
 desktop-build: ## Build desktop bundle for current OS
 ifeq ($(OS),Windows_NT)
-	cd apps/desktop; pnpm install; pnpm build
+	cd apps/desktop; bun install; bun run build
 else
-	cd apps/desktop && pnpm install && pnpm build
+	cd apps/desktop && bun install && bun run build
 endif
 
 # ── Quality, Checks & Linting ────────────────────────────────
@@ -220,22 +220,22 @@ check-backend: ## Run cargo clippy with workspace lint policy
 	cargo clippy --workspace
 
 check-frontend: ## Run TypeScript typecheck on web frontend
-	pnpm --filter=@cms/web typecheck
+	bun --filter @cms/web typecheck
 
 lint: ## Run Biome linter and format check on web codebase
-	pnpm --filter=@cms/web exec biome check src/
+	bun --filter @cms/web biome check src/
 
 lint-fix: ## Auto-fix Biome lint and format issues
-	pnpm --filter=@cms/web exec biome check --write src/
+	bun --filter @cms/web biome check --write src/
 
 format: ## Format web codebase with Biome
-	pnpm --filter=@cms/web exec biome format --write src/
+	bun --filter @cms/web biome format --write src/
 
 format-rust: ## Format all Rust crates with rustfmt
 	cargo fmt --all
 
 check-circular: ## Fail on circular imports in web app (prevents TDZ crashes)
-	pnpm --filter=@cms/web run check:circular
+	bun --filter @cms/web run check:circular
 
 # ── Architecture & Contract Gates ────────────────────────────
 
@@ -409,15 +409,15 @@ test-unit: ## Run fast Rust unit tests only (zero DB required)
 	cargo test -p cms-adapter-sdk -p cms-core
 
 test-ts: ## Run TypeScript unit tests (Vitest)
-	pnpm --filter=@cms/web test
+	bun --filter @cms/web test
 
 test-all: test-rust test-ts ## Run all Rust + TypeScript tests
 
 smoke-test: ## Run API smoke tests with Playwright (requires running backend)
-	pnpm exec playwright test --config apps/web/playwright.config.ts --project=api
+	bunx playwright test --config apps/web/playwright.config.ts --project=api
 
 e2e-test: ## Run full E2E scenario tests (requires running backend + frontend)
-	pnpm exec playwright test --config apps/web/playwright.config.ts e2e/scenarios/
+	bunx playwright test --config apps/web/playwright.config.ts e2e/scenarios/
 
 # ── Code Generation & Synchronization ────────────────────────
 

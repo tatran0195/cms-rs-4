@@ -1,9 +1,9 @@
 {
   "name": "@cms/ui-preset",
   "version": "0.0.0",
+  "private": true,
   "description": "cms UI preset & tokens",
   "license": "MIT",
-  "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -20,12 +20,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
     "@cms/tsconfig": "workspace:*",
-    "@types/node": "^26.6.5",
-    "typescript": "^7.0.2",
-    "tsdown": "^0.23.0"
+    "@cms/tsdown": "workspace:*",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
   }
 }

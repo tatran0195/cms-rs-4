@@ -3,32 +3,38 @@ import {
   type ColumnFiltersState,
   type ColumnOrderState,
   type ColumnSort,
-  getCoreRowModel,
   type PaginationState,
   type RowSelectionState,
   type SortingState,
   type TableOptions,
   type Updater,
-  useReactTable,
-  type VisibilityState,
+  useTable,
 } from '@tanstack/react-table';
 import * as React from 'react';
 import {
+  type DataTableColumn,
   type DataTableColumnDef,
   type DataTableColumnFilter,
   type DataTableCommand,
   type DataTableDateComparisonOperator,
   DataTableEmptyState,
+  type DataTableFeatures,
   type DataTableFilter,
   type DataTableFilteringState,
   type DataTableFilterOption,
+  type DataTableHeaderGroup,
   type DataTablePaginationState,
   type DataTableRow,
+  type DataTableRowData,
   type DataTableRowSelectionState,
   type DataTableSortingState,
+  type DataTableTable,
+  dataTableFeatures,
+  type VisibilityState,
 } from './types';
 
-interface DataTableOptions<TData> extends Pick<TableOptions<TData>, 'data' | 'getRowId'> {
+interface DataTableOptions<TData extends DataTableRowData = DataTableRowData>
+  extends Pick<TableOptions<DataTableFeatures, TData>, 'data' | 'getRowId'> {
   /**
    * The columns to use for the table.
    */
@@ -117,22 +123,34 @@ interface DataTableOptions<TData> extends Pick<TableOptions<TData>, 'data' | 'ge
   };
 }
 
-interface UseDataTableReturn<TData>
-  extends Pick<
-    ReturnType<typeof useReactTable<TData>>,
-    | 'getHeaderGroups'
-    | 'getRowModel'
-    | 'getCanNextPage'
-    | 'getCanPreviousPage'
-    | 'nextPage'
-    | 'previousPage'
-    | 'getPageCount'
-    | 'getAllColumns'
-    | 'setColumnVisibility'
-    | 'setColumnOrder'
-  > {
+interface UseDataTableReturn<TData extends DataTableRowData = DataTableRowData> {
+  // Table
+  getHeaderGroups: () => DataTableHeaderGroup<TData>[];
+  getRowModel: () => { rows: DataTableRow<TData>[] };
+  getAllColumns: () => DataTableColumn<TData, unknown>[];
+  setColumnVisibility: (updater: Updater<VisibilityState>) => void;
+  setColumnOrder: (updater: Updater<ColumnOrderState>) => void;
+  table: DataTableTable<TData>;
+  // Pagination
+  enablePagination: boolean;
+  getCanNextPage: () => boolean;
+  getCanPreviousPage: () => boolean;
+  nextPage: () => void;
+  previousPage: () => void;
+  getPageCount: () => number;
+  pageIndex: number;
+  pageSize: number;
+  rowCount: number;
+  // Search
+  enableSearch: boolean;
+  getSearch: () => string;
+  onSearchChange: (search: string) => void;
+  // Sorting
+  enableSorting: boolean;
   getSorting: () => DataTableSortingState | null;
   setSorting: (sortingOrUpdater: DataTableSortingState | ((prev: DataTableSortingState | null) => DataTableSortingState)) => void;
+  // Filtering
+  enableFiltering: boolean;
   getFilters: () => DataTableFilter[];
   getFilterOptions: <T extends string | string[] | DataTableDateComparisonOperator>(id: string) => DataTableFilterOption<T>[] | null;
   getFilterMeta: (id: string) => DataTableFilter | null;
@@ -141,28 +159,25 @@ interface UseDataTableReturn<TData>
   removeFilter: (id: string) => void;
   clearFilters: () => void;
   updateFilter: (filter: DataTableColumnFilter) => void;
-  getSearch: () => string;
-  onSearchChange: (search: string) => void;
+  // Commands
   getCommands: () => DataTableCommand[];
   getRowSelection: () => DataTableRowSelectionState;
+  // Handlers
   onRowClick?: (event: React.MouseEvent<HTMLTableRowElement, MouseEvent>, row: TData) => void;
+  // Empty State
   emptyState: DataTableEmptyState;
+  // Loading
   isLoading: boolean;
   showSkeleton: boolean;
-  pageIndex: number;
-  pageSize: number;
-  rowCount: number;
-  enablePagination: boolean;
-  enableFiltering: boolean;
-  enableSorting: boolean;
-  enableSearch: boolean;
+  // Column Visibility
   enableColumnVisibility: boolean;
+  // Column Order
   enableColumnOrder: boolean;
   columnOrder: ColumnOrderState;
   setColumnOrderFromArray: (order: string[]) => void;
 }
 
-const useDataTable = <TData,>({
+const useDataTable = <TData extends DataTableRowData = DataTableRowData>({
   rowCount = 0,
   filters,
   commands,
@@ -176,6 +191,7 @@ const useDataTable = <TData,>({
   isLoading = false,
   columnVisibility,
   columnOrder,
+  columns,
   ...options
 }: DataTableOptions<TData>): UseDataTableReturn<TData> => {
   const { state: sortingState, onSortingChange } = sorting ?? {};
@@ -253,9 +269,11 @@ const useDataTable = <TData,>({
     [onColumnOrderChange, columnOrderState],
   );
 
-  const instance = useReactTable({
+  const instance = useTable({
     ...options,
-    getCoreRowModel: getCoreRowModel(),
+    features: dataTableFeatures,
+    columns: (columns ?? []) as DataTableColumnDef<TData, unknown>[],
+    data: (options.data ?? []) as TData[],
     state: {
       rowSelection: rowSelectionState ?? {},
       sorting: sortingState ? [sortingState] : undefined,
@@ -280,15 +298,15 @@ const useDataTable = <TData,>({
     manualFiltering: true,
   });
 
-  const getSorting = React.useCallback(() => instance.getState().sorting?.[0] ?? null, [instance]);
+  const getSorting = React.useCallback(() => instance.state.sorting?.[0] ?? null, [instance]);
 
   const setSorting = React.useCallback(
     (sortingOrUpdater: ColumnSort | ((prev: ColumnSort | null) => ColumnSort)) => {
-      const currentSort = instance.getState().sorting?.[0] ?? null;
+      const currentSort = instance.state.sorting?.[0] ?? null;
       const newSorting = typeof sortingOrUpdater === 'function' ? sortingOrUpdater(currentSort) : sortingOrUpdater;
 
       autoResetPageIndexHandler()?.();
-      instance.setSorting([newSorting]);
+      instance.setSorting(newSorting ? [newSorting] : []);
     },
     [instance, autoResetPageIndexHandler],
   );
@@ -311,8 +329,8 @@ const useDataTable = <TData,>({
   const getFilterMeta = React.useCallback((id: string) => getFilters().find((filter) => filter.id === id) || null, [getFilters]);
 
   const getFiltering = React.useCallback(() => {
-    const state = instance.getState().columnFilters ?? [];
-    return Object.fromEntries(state.map((filter) => [filter.id, filter.value]));
+    const state = instance.state.columnFilters ?? [];
+    return Object.fromEntries(state.map((filter: { id: string; value: unknown }) => [filter.id, filter.value]));
   }, [instance]);
 
   const addFilter = React.useCallback(
@@ -400,7 +418,7 @@ const useDataTable = <TData,>({
 
   const getCommands = React.useCallback(() => commands ?? [], [commands]);
 
-  const getRowSelection = React.useCallback(() => instance.getState().rowSelection, [instance]);
+  const getRowSelection = React.useCallback(() => instance.state.rowSelection ?? {}, [instance]);
 
   const rows = instance.getRowModel().rows;
 
@@ -443,6 +461,7 @@ const useDataTable = <TData,>({
     getAllColumns: instance.getAllColumns,
     setColumnVisibility: instance.setColumnVisibility,
     setColumnOrder: instance.setColumnOrder,
+    table: instance,
     // Pagination
     enablePagination,
     getCanNextPage: instance.getCanNextPage,
@@ -450,8 +469,8 @@ const useDataTable = <TData,>({
     nextPage: instance.nextPage,
     previousPage: instance.previousPage,
     getPageCount: instance.getPageCount,
-    pageIndex: instance.getState()?.pagination?.pageIndex ?? 0,
-    pageSize: instance.getState()?.pagination?.pageSize ?? 10,
+    pageIndex: instance.state?.pagination?.pageIndex ?? 0,
+    pageSize: instance.state?.pagination?.pageSize ?? 10,
     rowCount,
     // Search
     enableSearch,
@@ -485,7 +504,7 @@ const useDataTable = <TData,>({
     enableColumnVisibility,
     // Column Order
     enableColumnOrder,
-    columnOrder: instance.getState().columnOrder,
+    columnOrder: instance.state.columnOrder ?? [],
     setColumnOrderFromArray,
   };
 };

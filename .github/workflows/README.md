@@ -26,7 +26,7 @@ The root `ci.yml` starts from what is verified green and carries the rest as
 Real work lives in these files that the root pipeline does not yet cover:
 
 | File | What it has |
-|---|---|
+| --- | --- |
 | `ci.yml` | Playwright E2E, Docker build, `cargo audit`, `pnpm audit` |
 | `security.yml` | security scanning |
 | `spicedb-validate.yml` | authz schema validation |

@@ -2,7 +2,7 @@
 
 import { closestCenter, DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { type Cell, flexRender } from '@tanstack/react-table';
+import { flexRender } from '@tanstack/react-table';
 import * as React from 'react';
 import { useDataTableContext } from '@/blocks/data-table/context/use-data-table-context';
 import { Skeleton } from '@/components/skeleton';
@@ -12,6 +12,7 @@ import { Tooltip } from '@/components/tooltip';
 import { clx } from '@/utils/clx';
 import {
   type DataTableAlignableColumnDefMeta,
+  type DataTableCell,
   DataTableEmptyState,
   type DataTableEmptyStateContent,
   type DataTableEmptyStateProps,
@@ -507,7 +508,7 @@ const DataTableTableSkeleton = ({ pageSize = 10 }: DataTableTableSkeletonProps) 
 // column's `align` meta. Left-aligned (or unset) cells render bare; only
 // center/right wrap in an alignment flex row. The content is clipped and (by
 // default) tooltipped by TruncatedCell.
-function renderAlignedCell(cell: Cell<unknown, unknown>) {
+function renderAlignedCell(cell: DataTableCell) {
   const meta = cell.column.columnDef.meta as (DataTableAlignableColumnDefMeta & DataTableTruncatableColumnDefMeta) | undefined;
   const align = meta?.___alignMetaData?.align;
   // Opt-out is explicit `false`; anything else (incl. unset) truncates+tooltips.

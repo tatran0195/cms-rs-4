@@ -1,8 +1,8 @@
 {
   "name": "@cms/i18n",
-  "license": "MIT",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -15,25 +15,26 @@
     "./runtime": "./src/paraglide/runtime.js"
   },
   "scripts": {
-    "setup": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy cookie preferredLanguage baseLocale --output-structure message-modules --emit-ts-declarations",
+    "build": "tsdown",
     "clean": "git clean -xdf .cache .turbo dist node_modules src/paraglide",
-    "typecheck": "tsc --noEmit",
+    "setup": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy cookie preferredLanguage baseLocale --output-structure message-modules --emit-ts-declarations",
     "test": "vitest run",
-    "build": "tsdown"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@inlang/paraglide-js": "2.27.0"
   },
-  "peerDependencies": {
-    "react": "^19.2.8"
-  },
   "devDependencies": {
     "@cms/tsconfig": "workspace:*",
-    "@types/node": "^26.6.5",
-    "@types/react": "^19.3.0",
-    "react": "^19.3.0",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.3",
-    "tsdown": "^0.23.0"
+    "@cms/tsdown": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "^5.0.3"
+  },
+  "peerDependencies": {
+    "react": "^19.2.8"
   }
 }

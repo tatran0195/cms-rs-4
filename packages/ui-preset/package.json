@@ -10,13 +10,11 @@
     "./theme.css": "./theme.css"
   },
   "files": [
-    "dist",
     "src",
     "theme.css"
   ],
   "scripts": {
-    "build": "tsdown",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "clean": "git clean -xdf .cache .turbo node_modules",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -24,9 +22,7 @@
   },
   "devDependencies": {
     "@cms/tsconfig": "workspace:*",
-    "@cms/tsdown": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }

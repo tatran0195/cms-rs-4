@@ -7,20 +7,20 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "turbo run build",
-    "check": "ultracite check",
+    "build": "vp run -r build",
     "dev:storybook": "bun --filter @cms/ui storybook",
     "dev:studio": "bun --filter @cms/studio dev",
-    "dev:ui": "bun --filter @cms/ui dev",
-    "dev:web": "bun --filter @cms/web dev",
     "fix": "ultracite fix",
     "format": "biome check --write --unsafe --max-diagnostics=none .",
+    "format:md": "markdownlint-cli2 --fix \"**/*.md\" \"!**/node_modules/**\"",
     "knip": "knip",
     "lint": "ultracite check",
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"!**/node_modules/**\"",
-    "lint:md:fix": "markdownlint-cli2 --fix \"**/*.md\" \"!**/node_modules/**\"",
-    "test": "turbo run test",
-    "typecheck": "turbo run typecheck"
+    "test": "vp run -r test",
+    "typecheck": "vp run -r typecheck"
+  },
+  "overrides": {
+    "vite": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
@@ -29,7 +29,6 @@
     "markdownlint-cli2": "^0.23.3",
     "react-doctor": "^0.9.17",
     "tsdown": "^0.23.0",
-    "turbo": "^2.11.7",
     "typescript": "^7.0.2",
     "ultracite": "^7.12.4",
     "unrun": "^0.3.1"
@@ -47,7 +46,9 @@
     "@types/react-dom": "^19.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+    "vite-plus": "^1.1.0"
   },
   "trustedDependencies": [
     "@parcel/watcher",

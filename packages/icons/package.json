@@ -10,21 +10,17 @@
     ".": "./src/index.ts"
   },
   "files": [
-    "dist",
     "src"
   ],
   "scripts": {
-    "build": "tsdown",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "clean": "git clean -xdf .cache .turbo node_modules",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@cms/tsconfig": "workspace:*",
-    "@cms/tsdown": "workspace:*",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {

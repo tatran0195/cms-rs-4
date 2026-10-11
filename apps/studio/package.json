@@ -20,6 +20,10 @@
     "@cms/ui-preset": "workspace:*",
     "@cms/icons": "workspace:*",
     "@cms/i18n": "workspace:*",
+    "@cms/types": "workspace:*",
+    "@cms/docs-utils": "workspace:*",
+    "@cms/docs-ui": "workspace:*",
+    "@cms/tailwind": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tailwindcss": "catalog:"

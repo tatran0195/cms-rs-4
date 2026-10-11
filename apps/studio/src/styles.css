@@ -1,5 +1,10 @@
-
 @import "tailwindcss";
+@import "@cms/tailwind/theme.css";
+
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+@source "../../../packages/docs-ui/src/**/*.{ts,tsx}";
+@source "../../../packages/ui/dist/**/*.{js,mjs}";
+@source "../../../packages/docs-ui/dist/**/*.{js,mjs}";
 
 * {
   box-sizing: border-box;
@@ -13,5 +18,6 @@ body,
 
 body {
   margin: 0;
+  background-color: var(--bg-subtle, #fafafa);
+  color: var(--fg-base, #18181b);
 }
-

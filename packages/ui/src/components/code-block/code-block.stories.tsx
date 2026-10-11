@@ -108,19 +108,19 @@ export const TabsWithTerminal: Story = {
           {
             label: 'yarn',
             language: 'bash',
-            code: '>  yarn global add @medusajs/mcloud',
+            code: '>  yarn global add @cms/mcloud',
             hideLineNumbers: true,
           },
           {
             label: 'pnpm',
             language: 'bash',
-            code: '>  pnpm add -g @medusajs/mcloud',
+            code: '>  pnpm add -g @cms/mcloud',
             hideLineNumbers: true,
           },
           {
             label: 'npm',
             language: 'bash',
-            code: '>  npm install -g @medusajs/mcloud',
+            code: '>  npm install -g @cms/mcloud',
             hideLineNumbers: true,
           },
         ]}

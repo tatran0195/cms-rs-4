@@ -52,7 +52,7 @@ type RootProps = {
 };
 
 /**
- * CodeBlock component formatted according to Medusa UI specifications.
+ * CodeBlock component formatted according to CMS UI specifications.
  */
 const Root = ({ snippets, className, children, ...props }: React.HTMLAttributes<HTMLDivElement> & RootProps) => {
   const [active, setActive] = React.useState<CodeSnippet>(snippets[0] as CodeSnippet);

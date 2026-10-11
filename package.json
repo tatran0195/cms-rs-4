@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "vp run -r build",
+    "dev:docs": "bun --filter @cms/docs dev",
     "dev:storybook": "bun --filter @cms/ui storybook",
     "dev:studio": "bun --filter @cms/studio dev",
     "fix": "ultracite fix",
@@ -22,13 +23,24 @@
   "overrides": {
     "vite": "catalog:"
   },
+  "dependencies": {
+    "tailwindcss": "^4.3.3"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
-    "@playwright/test": "^1.63.0",
-    "knip": "^6.39.0",
+    "@playwright/test": "^1.64.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "autoprefixer": "^10.6.1",
+    "css.escape": "^1.5.1",
+    "indent-string": "^5.0.0",
+    "is-potential-custom-element-name": "^1.0.1",
+    "knip": "^6.41.0",
     "markdownlint-cli2": "^0.23.3",
+    "min-indent": "^1.0.1",
+    "picocolors": "^1.1.1",
     "react-doctor": "^0.9.17",
-    "tsdown": "^0.23.0",
+    "strip-indent": "^4.1.1",
+    "tsdown": "^0.23.1",
     "typescript": "^7.0.2",
     "ultracite": "^7.12.4",
     "unrun": "^0.3.1"
@@ -39,7 +51,7 @@
     "node": ">=24.0.0"
   },
   "catalog": {
-    "tsdown": "^0.23.0",
+    "tsdown": "^0.23.1",
     "typescript": "^7.0.2",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",

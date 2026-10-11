@@ -21,8 +21,9 @@ describe('OtpInput', () => {
     render(<ControlledOtpInput />);
 
     const [firstInput] = screen.getAllByRole('textbox');
+    expect(firstInput).toBeDefined();
 
-    fireEvent.change(firstInput, { target: { value: 'a1b' } });
+    fireEvent.change(firstInput!, { target: { value: 'a1b' } });
 
     expect(firstInput).toHaveValue('1');
   });
@@ -33,8 +34,9 @@ describe('OtpInput', () => {
     render(<ControlledOtpInput onComplete={onComplete} />);
 
     const inputs = screen.getAllByRole('textbox');
+    expect(inputs[0]).toBeDefined();
 
-    fireEvent.paste(inputs[0], {
+    fireEvent.paste(inputs[0]!, {
       clipboardData: {
         getData: () => '12a3456',
       },
@@ -48,8 +50,9 @@ describe('OtpInput', () => {
     render(<ControlledOtpInput initialValue="1" />);
 
     const inputs = screen.getAllByRole('textbox');
+    expect(inputs[1]).toBeDefined();
 
-    fireEvent.keyDown(inputs[1], { key: 'Backspace' });
+    fireEvent.keyDown(inputs[1]!, { key: 'Backspace' });
 
     expect(inputs[0]).toHaveValue('');
   });

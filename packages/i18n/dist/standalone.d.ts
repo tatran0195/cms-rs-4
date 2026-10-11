@@ -99,4 +99,5 @@ export declare const syncStandaloneLocale: typeof synchronizeDocumentLanguageFn;
 export declare const translateStandalone: (key: StandaloneMessageKey, locale?: Locale) => string;
 export declare const useStandaloneT: () => (key: StandaloneMessageKey) => string;
 //#endregion
+export {};
 //# sourceMappingURL=standalone.d.ts.map

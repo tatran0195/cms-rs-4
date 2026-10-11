@@ -1,0 +1,25 @@
+{
+  "name": "@cms/tailwind",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "exports": {
+    ".": "./theme.css",
+    "./theme.css": "./theme.css"
+  },
+  "style": "theme.css",
+  "files": [
+    "theme.css"
+  ],
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo node_modules"
+  },
+  "dependencies": {
+    "@cms/ui-preset": "workspace:*"
+  },
+  "devDependencies": {
+    "@cms/tsconfig": "workspace:*",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-DkW27tQK.js";import{n as t,t as n}from"./kbd-DLSSt-rN.js";var r,i,a;function o(){return(o=e((()=>{t(),r={title:`Components/Kbd`,component:n,parameters:{layout:`centered`}},i={args:{children:`⌘`}},a=[`Default`]})))()}o();export{i as Default,a as __namedExportsOrder,r as default};

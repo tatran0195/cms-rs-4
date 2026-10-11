@@ -1,5 +1,10 @@
-import { defineNeutralConfig } from '@cms/tsdown';
+import { defineConfig } from 'tsdown';
 
-export default defineNeutralConfig({
+export default defineConfig({
   entry: ['src/index.ts', 'src/locales.ts', 'src/react.ts', 'src/standalone.ts', 'src/email.ts', 'src/site.ts'],
+  format: ['esm'],
+  platform: 'neutral',
+  clean: true,
+  dts: true,
+  sourcemap: true,
 });

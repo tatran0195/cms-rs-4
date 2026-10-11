@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "@cms/tsconfig": "workspace:*",
-    "@cms/tsdown": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "react": "catalog:",

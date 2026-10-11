@@ -1,0 +1,7 @@
+{
+  "extends": "@cms/tsconfig/base.json",
+  "compilerOptions": {
+    "allowJs": true
+  },
+  "include": ["*.mjs", "*.js"]
+}

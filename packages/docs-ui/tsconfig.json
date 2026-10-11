@@ -1,0 +1,14 @@
+{
+  "extends": "@cms/tsconfig/react.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noUncheckedIndexedAccess": false,
+    "paths": {
+      "@cms/docs-ui": ["./src/index.ts"],
+      "docs-ui": ["./src/index.ts"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["**/__tests__/**", "**/__mocks__/**"]
+}

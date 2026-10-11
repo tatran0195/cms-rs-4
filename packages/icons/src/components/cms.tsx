@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { IconProps } from '../types';
 
-const cms = React.forwardRef<SVGSVGElement, Omit<IconProps, 'color'>>((props, ref) => (
+const CMS = React.forwardRef<SVGSVGElement, Omit<IconProps, 'color'>>((props, ref) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={15} height={15} viewBox="0 0 15 15" fill="none" ref={ref} {...props}>
     <path
       fill="#18181B"
@@ -9,5 +9,5 @@ const cms = React.forwardRef<SVGSVGElement, Omit<IconProps, 'color'>>((props, re
     />
   </svg>
 ));
-cms.displayName = 'cms';
-export default cms;
+CMS.displayName = 'CMS';
+export default CMS;

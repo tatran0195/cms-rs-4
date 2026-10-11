@@ -3,7 +3,7 @@ import { clx } from '@/utils/clx';
 
 interface InlineTipProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string;
-  variant?: 'info' | 'warning' | 'error' | 'success';
+  variant?: 'info' | 'warning' | 'error' | 'success' | 'neutral';
 }
 
 /**
@@ -33,10 +33,11 @@ export const InlineTip = React.forwardRef<HTMLDivElement, InlineTipProps>(
     >
       <div
         role="presentation"
-        className={clx('bg-ui-tag-neutral-icon h-full w-1 rounded-full', {
+        className={clx('h-full w-1 rounded-full', {
           'bg-ui-tag-orange-icon': variant === 'warning',
           'bg-ui-tag-red-icon': variant === 'error',
           'bg-ui-tag-green-icon': variant === 'success',
+          'bg-ui-tag-neutral-icon': variant === 'neutral',
         })}
       />
       <div className="text-pretty">

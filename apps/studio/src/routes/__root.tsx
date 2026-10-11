@@ -1,3 +1,4 @@
+import { Toaster } from "@cms/ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -12,6 +13,7 @@ function RootComponent() {
 	return (
 		<>
 			<Outlet />
+			<Toaster position="bottom-right" />
 			<TanStackDevtools
 				config={{
 					position: "bottom-right",

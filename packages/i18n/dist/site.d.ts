@@ -6,4 +6,5 @@ export type SiteMessageKey = SiteContractKey extends `site.${infer Key}` ? Key :
  * the dashboard's Paraglide locale or depend on a browser preference. */
 export declare function siteT(language?: string): (key: SiteMessageKey) => string;
 //#endregion
+export {};
 //# sourceMappingURL=site.d.ts.map

@@ -1,0 +1,83 @@
+{
+  "name": "@cms/docs-ui",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "clean": "git clean -xdf .cache .turbo dist",
+    "generate:mermaid-icons": "node scripts/generate-mermaid-icons.mjs",
+    "lint": "biome lint src",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "watch": "tsdown --watch"
+  },
+  "dependencies": {
+    "@cms/docs-utils": "workspace:*",
+    "@cms/icons": "workspace:*",
+    "@cms/tailwind": "workspace:*",
+    "@cms/types": "workspace:*",
+    "@cms/ui": "workspace:*",
+    "@emotion/is-prop-valid": "^1.4.0",
+    "@kapaai/react-sdk": "^0.14.0",
+    "@next/third-parties": "16.4.0",
+    "@react-hook/resize-observer": "^2.0.2",
+    "@segment/analytics-next": "^1.84.3",
+    "@uidotdev/usehooks": "^2.4.1",
+    "algoliasearch": "^5.59.0",
+    "framer-motion": "^14.1.0",
+    "mermaid": "^12.1.0",
+    "minisearch": "^7.2.0",
+    "motion": "^14.1.0",
+    "npm-to-yarn": "^3.2.0",
+    "prism-react-renderer": "2.4.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-instantsearch": "^7.51.0",
+    "react-markdown": "^10.1.0",
+    "react-medium-image-zoom": "^5.4.9",
+    "react-tooltip": "^6.0.8",
+    "react-transition-group": "^4.4.5",
+    "react-uuid": "^2.0.0",
+    "reodotdev": "^1.1.0",
+    "slugify": "^1.6.9"
+  },
+  "devDependencies": {
+    "@cms/tsconfig": "workspace:*",
+    "@cms/types": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "clsx": "^2.1.1",
+    "cpy-cli": "^7.0.0",
+    "next": "16.4.0",
+    "schema-dts": "^2.1.0",
+    "tailwindcss": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "^5.0.3"
+  },
+  "peerDependencies": {
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "next": "*",
+    "posthog-js": "^1.298.1",
+    "react": "*",
+    "react-dom": "*"
+  }
+}

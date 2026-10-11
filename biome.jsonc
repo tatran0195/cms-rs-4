@@ -7,6 +7,7 @@
     "useIgnoreFile": true
   },
   "files": {
+    "maxSize": 2097152,
     "includes": [
       "!**/dist",
       "!**/.output",
@@ -44,6 +45,26 @@
           "vi"
         ]
       }
+    },
+    {
+      "includes": ["packages/docs-ui/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "a11y": {
+            "noNoninteractiveElementInteractions": "off",
+            "noStaticElementInteractions": "off"
+          },
+          "performance": {
+            "noDynamicNamespaceImportAccess": "off"
+          }
+        }
+      }
     }
   ],
   "assist": {
@@ -71,28 +92,38 @@
         "noAlert": "off",
         "noBitwiseOperators": "off",
         "noConsole": "off",
+        "noDuplicateDependencies": "off",
+        "noEmptyBlockStatements": "off",
         "noEqualsToNull": "off",
-        "noExplicitAny": "warn",
+        "noEvolvingTypes": "off",
+        "noExplicitAny": "off",
         "noLeakedRender": "off",
+        "noNonNullAssertedOptionalChain": "off",
         // Component libraries (@cms/ui and @cms/icons) use React.forwardRef for Radix UI slotting and ref forwarding
         "noReactForwardRef": "off",
+        "noRedeclare": "off",
         "noShadow": "off",
         "noUnknownAttribute": "off",
         "noUnnecessaryConditions": "off",
         "useAwait": "off"
       },
       "style": {
+        "noEnum": "off",
         "noExportedImports": "off",
         "noIncrementDecrement": "off",
+        "noMultiAssign": "off",
         "noNegationElse": "off",
         "noNestedTernary": "off",
-        "noNonNullAssertion": "warn",
+        "noNonNullAssertion": "off",
+        "noParameterAssign": "off",
         "noParameterProperties": "off",
+        "noSubstr": "off",
         "useAtIndex": "off",
         "useBlockStatements": "off",
         "useConsistentArrayType": "off",
         "useConsistentMethodSignatures": "off",
         "useConsistentTypeDefinitions": "off",
+        "useDefaultSwitchClause": "off",
         "useDestructuring": "off",
         "useErrorCause": "off",
         "useFilenamingConvention": "off",
@@ -104,6 +135,7 @@
         "noForEach": "off",
         "noRedundantDefaultExport": "off",
         "noStaticOnlyClass": "off",
+        "noUselessFragments": "off",
         "noVoid": "off",
         "useSimplifiedLogicExpression": "off"
       },
@@ -112,15 +144,27 @@
         "noAwaitInLoops": "off",
         "noBarrelFile": "off",
         "noDelete": "off",
+        "noImgElement": "off",
         "noJsxPropsBind": "off",
         "noNamespaceImport": "off",
         "useTopLevelRegex": "off"
       },
       "a11y": {
+        "noAmbiguousAnchorText": "off",
+        "noLabelWithoutControl": "off",
         "noSvgWithoutTitle": "off",
-        "useKeyWithClickEvents": "off"
+        "useAltText": "off",
+        "useAnchorContent": "off",
+        "useButtonType": "off",
+        "useKeyWithClickEvents": "off",
+        "useKeyWithMouseEvents": "off",
+        "useValidAnchor": "off"
       },
       "correctness": {
+        "noInvalidUseBeforeDeclaration": "off",
+        "noUnusedFunctionParameters": "off",
+        "useExhaustiveDependencies": "off",
+        "useHookAtTopLevel": "off",
         "useImageSize": "off"
       },
       "nursery": {

@@ -8,7 +8,7 @@ rust-version.workspace = true
 cms-core = { path = "../cms-core" }
 cms-db = { path = "../cms-db" }
 axum = { workspace = true }
-axum-extra = { version = "0.10", features = ["cookie"] }
+axum-extra = { version = "0.12", features = ["cookie"] }
 tokio = { workspace = true }
 tower = { workspace = true }
 tower-http = { workspace = true }

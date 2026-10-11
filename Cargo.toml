@@ -45,7 +45,7 @@ figment = { version = "0.10", features = ["toml", "env"] }
 # Auth
 jsonwebtoken = { version = "9" }
 argon2 = "0.5"
-axum-extra = { version = "0.10", features = ["cookie"] }
+axum-extra = { version = "0.12", features = ["cookie"] }
 getrandom = { version = "0.3", features = ["std"] }
 
 # Utilities

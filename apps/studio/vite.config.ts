@@ -8,13 +8,21 @@ const config = defineConfig({
 	resolve: {
 		tsconfigPaths: true,
 	},
+	server: {
+		port: 3001,
+		proxy: {
+			"/api": {
+				target: "http://127.0.0.1:8000",
+				changeOrigin: true,
+			},
+		},
+	},
 	plugins: [
 		devtools(),
 		tailwindcss(),
 		tanstackRouter({ target: "react", autoCodeSplitting: true }),
 		viteReact(),
 	] as PluginOption[],
-	// outputStructure: 'message-modules'
 });
 
 export default config;

@@ -12,18 +12,21 @@
     "check": "biome check"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "@tanstack/react-devtools": "0.10.13",
-    "@tanstack/react-router": "1.170.42",
-    "@tanstack/react-router-devtools": "1.167.2",
+    "@cms/client": "workspace:*",
+    "@cms/docs-ui": "workspace:*",
+    "@cms/docs-utils": "workspace:*",
+    "@cms/i18n": "workspace:*",
+    "@cms/icons": "workspace:*",
+    "@cms/tailwind": "workspace:*",
+    "@cms/types": "workspace:*",
     "@cms/ui": "workspace:*",
     "@cms/ui-preset": "workspace:*",
-    "@cms/icons": "workspace:*",
-    "@cms/i18n": "workspace:*",
-    "@cms/types": "workspace:*",
-    "@cms/docs-utils": "workspace:*",
-    "@cms/docs-ui": "workspace:*",
-    "@cms/tailwind": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-devtools": "0.10.13",
+    "@tanstack/react-query": "5.104.1",
+    "@tanstack/react-router": "1.170.42",
+    "@tanstack/react-router-devtools": "1.167.2",
+    "msw": "^3.0.3",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tailwindcss": "catalog:"
@@ -41,5 +44,10 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

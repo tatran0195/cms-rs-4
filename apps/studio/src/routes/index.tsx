@@ -1,14 +1,27 @@
-// 5. @cms/docs-utils
+import {
+	useCreateDocPage,
+	useCreateSite,
+	useDeleteDocPage,
+	useDeleteSite,
+	useDocPages,
+	useListSites,
+	useMarkAllNotificationsRead,
+	useMarkNotificationRead,
+	useNotifications,
+	useUnreadNotificationCount,
+} from "@cms/client/react";
 import { globalConfig } from "@cms/docs-utils/global-config";
 // 3. @cms/i18n
 import { INTERFACE_LOCALES, type Locale } from "@cms/i18n/locales";
 import { useLocale } from "@cms/i18n/react";
-
 // 2. @cms/icons
 import {
+	ArrowLeft,
+	BellAlert,
 	Bolt,
 	BookOpen,
 	Check,
+	CirclePlus,
 	Cms,
 	CommandLine,
 	Globe,
@@ -34,10 +47,12 @@ import {
 	StatusBadge,
 	Switch,
 	Text,
+	Textarea,
 	toast,
 } from "@cms/ui";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { DEMO_CREDENTIALS, useAuth } from "../features/auth";
 
 // Validated DocsConfig type contract
 const docsMeta: Pick<DocsConfig, "version"> = globalConfig;
@@ -59,8 +74,8 @@ const testNavigation: NavigationItem[] = [
 		type: "dropdown",
 		title: "API Reference",
 		children: [
-			{ title: "Store API", path: "/api/store" },
-			{ title: "Admin API", path: "/api/admin" },
+			{ type: "link", title: "Store API", link: "/api/store" },
+			{ type: "link", title: "Admin API", link: "/api/admin" },
 		],
 		sidebar_id: "api_ref",
 	},
@@ -135,11 +150,53 @@ console.log("All packages compiled & bundled cleanly with Vite+!");`,
 
 function StudioTestDashboard() {
 	const { locale, setLocale } = useLocale();
+	const { user, logout, login } = useAuth();
+	const [showNotifications, setShowNotifications] = useState<boolean>(false);
 	const [activeTab, setActiveTab] = useState<
-		"overview" | "ui" | "icons" | "i18n" | "docs"
+		"overview" | "sites" | "ui" | "icons" | "i18n" | "docs"
 	>("overview");
 	const [switchEnabled, setSwitchEnabled] = useState(true);
 	const [inputText, setInputText] = useState("Testing @cms packages");
+
+	// Site & Page management state
+	const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+	const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+	const [isCreatingPage, setIsCreatingPage] = useState<boolean>(false);
+	const [newPageTitle, setNewPageTitle] = useState("");
+	const [newPageSlug, setNewPageSlug] = useState("");
+	const [newPageContent, setNewPageContent] = useState("");
+
+	const { data: sitesData = [] } = useListSites({ enabled: Boolean(user) });
+	const { data: notifData } = useNotifications(
+		{ limit: 10 },
+		{ enabled: Boolean(user) },
+	);
+	const { data: unreadData } = useUnreadNotificationCount({
+		enabled: Boolean(user),
+	});
+
+	const createSiteMutation = useCreateSite();
+	const deleteSiteMutation = useDeleteSite();
+	const createDocPageMutation = useCreateDocPage();
+	const deleteDocPageMutation = useDeleteDocPage();
+	const markReadMutation = useMarkNotificationRead();
+	const markAllReadMutation = useMarkAllNotificationsRead();
+
+	const sites = user ? sitesData : [];
+	const selectedSite = sites.find((s) => s.id === selectedSiteId) ?? null;
+
+	const { data: docPages = [], isLoading: isDocPagesLoading } = useDocPages(
+		selectedSiteId ?? "",
+		{ enabled: Boolean(selectedSiteId && user) },
+	);
+
+	const activeDocPage =
+		docPages.find((p) => p.id === selectedPageId) || docPages[0] || null;
+
+	const notifications = user ? (notifData?.notifications ?? []) : [];
+	const unreadCount = user
+		? (unreadData?.unread_count ?? notifData?.unread_count ?? 0)
+		: 0;
 
 	return (
 		<div className="min-h-screen bg-ui-bg-subtle text-ui-fg-base p-6 md:p-10 font-sans">
@@ -153,36 +210,142 @@ function StudioTestDashboard() {
 						<div>
 							<div className="flex items-center gap-2">
 								<Heading level="h1" className="text-xl md:text-2xl font-bold">
-									CMS Studio Package Verification
+									CMS Documentation Studio
 								</Heading>
 								<Badge color="green">v0.1.0-alpha</Badge>
 							</div>
 							<Text className="text-ui-fg-subtle text-sm">
-								Interactive testing sandbox validating monorepo packages in
-								real-time
+								Multi-site enterprise documentation platform & developer portal
 							</Text>
 						</div>
 					</div>
 
-					{/* Global Action / Status */}
+					{/* Global Action / Status & Auth Links */}
 					<div className="flex items-center gap-2">
+						{user ? (
+							<div className="flex items-center gap-3">
+								{/* Notification Bell */}
+								<div className="relative">
+									<Button
+										size="small"
+										variant="secondary"
+										onClick={() => setShowNotifications((prev) => !prev)}
+										className="relative flex items-center gap-1.5"
+									>
+										<BellAlert className="w-4 h-4" />
+										{unreadCount > 0 && (
+											<span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full leading-none">
+												{unreadCount}
+											</span>
+										)}
+									</Button>
+
+									{showNotifications && (
+										<div className="absolute right-0 mt-2 w-80 bg-ui-bg-base border border-ui-border-base rounded-xl shadow-lg p-3 z-50">
+											<div className="flex items-center justify-between pb-2 mb-2 border-b border-ui-border-base">
+												<span className="text-xs font-semibold text-ui-fg-base">
+													Notifications
+												</span>
+												{unreadCount > 0 && (
+													<button
+														type="button"
+														onClick={() => {
+															markAllReadMutation.mutate(undefined, {
+																onSuccess: () => {
+																	toast.success(
+																		"All notifications marked as read",
+																	);
+																},
+															});
+														}}
+														className="text-[11px] text-ui-fg-interactive hover:underline cursor-pointer"
+													>
+														Mark all as read
+													</button>
+												)}
+											</div>
+											{notifications.length === 0 ? (
+												<p className="text-xs text-ui-fg-muted text-center py-4">
+													No new notifications
+												</p>
+											) : (
+												<div className="space-y-1.5 max-h-60 overflow-y-auto">
+													{notifications.map((n) => (
+														<button
+															type="button"
+															key={n.id}
+															onClick={() => {
+																if (!n.is_read) {
+																	markReadMutation.mutate(n.id);
+																}
+															}}
+															className={`w-full text-left p-2 rounded-lg text-xs cursor-pointer transition-colors ${
+																n.is_read
+																	? "opacity-60 hover:bg-ui-bg-subtle"
+																	: "bg-ui-bg-field hover:bg-ui-bg-subtle border border-ui-border-base/50"
+															}`}
+														>
+															<p className="font-semibold text-ui-fg-base">
+																{n.title}
+															</p>
+															{n.body && (
+																<p className="text-ui-fg-subtle text-[11px] mt-0.5">
+																	{n.body}
+																</p>
+															)}
+															<span className="text-[10px] text-ui-fg-muted mt-1 block">
+																{new Date(n.created_at).toLocaleTimeString([], {
+																	hour: "2-digit",
+																	minute: "2-digit",
+																})}
+															</span>
+														</button>
+													))}
+												</div>
+											)}
+										</div>
+									)}
+								</div>
+
+								<div className="flex items-center gap-3 bg-ui-bg-base border border-ui-border-base px-3 py-1.5 rounded-xl shadow-xs">
+									<div className="flex flex-col text-right">
+										<span className="text-xs font-semibold text-ui-fg-base">
+											{user.fullName || user.full_name || user.email}
+										</span>
+										<span className="text-[10px] text-ui-fg-muted uppercase tracking-wider">
+											{user.role || "Member"}
+										</span>
+									</div>
+									<Button
+										size="small"
+										variant="secondary"
+										onClick={() => {
+											logout();
+											toast.info("Logged out successfully");
+										}}
+									>
+										Log out
+									</Button>
+								</div>
+							</div>
+						) : (
+							<>
+								<Link to="/login">
+									<Button variant="secondary">Log in</Button>
+								</Link>
+								<Link to="/signup">
+									<Button variant="primary">Sign up</Button>
+								</Link>
+							</>
+						)}
 						<Button
-							variant="secondary"
+							variant="transparent"
 							onClick={() =>
 								toast.info("Triggered from @cms/ui toast utility!")
 							}
 						>
 							<Sparkles className="w-4 h-4 mr-1.5" />
-							Test Toast
-						</Button>
-						<Button
-							variant="primary"
-							onClick={() =>
-								toast.success("All 8 workspace packages verified successfully!")
-							}
-						>
-							<Check className="w-4 h-4 mr-1.5" />
-							Verify All
+							Toast
 						</Button>
 					</div>
 				</header>
@@ -192,6 +355,7 @@ function StudioTestDashboard() {
 					{(
 						[
 							{ id: "overview", label: "Overview & Packages" },
+							{ id: "sites", label: `Documentation Sites (${sites.length})` },
 							{ id: "ui", label: "@cms/ui Components" },
 							{ id: "icons", label: "@cms/icons Gallery" },
 							{ id: "i18n", label: "@cms/i18n Localization" },
@@ -273,6 +437,402 @@ function StudioTestDashboard() {
 								<CodeBlock.Body />
 							</CodeBlock>
 						</div>
+					</div>
+				)}
+
+				{/* TAB: DOCUMENTATION SITES */}
+				{activeTab === "sites" && (
+					<div className="space-y-6">
+						{/* Sites Overview / Header */}
+						<div className="p-5 bg-ui-bg-base border border-ui-border-base rounded-2xl shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+							<div className="flex items-start gap-3">
+								<div className="p-2 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-lg">
+									<Globe className="w-6 h-6" />
+								</div>
+								<div>
+									<h2 className="font-semibold text-ui-fg-base">
+										{selectedSite
+											? selectedSite.name
+											: "Multi-Site Documentation Workspaces"}
+									</h2>
+									<p className="text-sm text-ui-fg-subtle mt-0.5">
+										{selectedSite
+											? selectedSite.description || `/${selectedSite.slug}`
+											: "Manage documentation sites, developer portals, and guides across your company."}
+									</p>
+								</div>
+							</div>
+							<div className="flex items-center gap-2">
+								{selectedSite ? (
+									<>
+										<Button
+											variant="secondary"
+											onClick={() => {
+												setSelectedSiteId(null);
+												setSelectedPageId(null);
+												setIsCreatingPage(false);
+											}}
+										>
+											<ArrowLeft className="w-4 h-4 mr-1.5" />
+											All Sites
+										</Button>
+										<Button
+											variant="primary"
+											onClick={() => setIsCreatingPage((prev) => !prev)}
+										>
+											<CirclePlus className="w-4 h-4 mr-1.5" />
+											{isCreatingPage ? "Close Form" : "Add Page"}
+										</Button>
+										<Button
+											variant="danger"
+											isLoading={deleteSiteMutation.isPending}
+											onClick={async () => {
+												try {
+													await deleteSiteMutation.mutateAsync(selectedSite.id);
+													toast.success(`Deleted site: ${selectedSite.name}`);
+													setSelectedSiteId(null);
+												} catch {
+													toast.error("Failed to delete site");
+												}
+											}}
+										>
+											Delete Site
+										</Button>
+									</>
+								) : user ? (
+									<Button
+										variant="primary"
+										isLoading={createSiteMutation.isPending}
+										onClick={async () => {
+											try {
+												const newSlug = `docs-${Date.now().toString(36)}`;
+												const created = await createSiteMutation.mutateAsync({
+													name: `Documentation (${newSlug})`,
+													slug: newSlug,
+													description: "New multi-site documentation workspace",
+													is_public: true,
+												});
+												toast.success(`Created site: ${created.name}`);
+											} catch {
+												toast.error("Failed to create site");
+											}
+										}}
+									>
+										<CirclePlus className="w-4 h-4 mr-1.5" />
+										New Site
+									</Button>
+								) : (
+									<Link to="/login">
+										<Button variant="primary">Log in to manage sites</Button>
+									</Link>
+								)}
+							</div>
+						</div>
+
+						{/* Detail View for Selected Site */}
+						{selectedSite ? (
+							<div className="space-y-6">
+								{/* Create Page Form Drawer/Card */}
+								{isCreatingPage && (
+									<div className="p-6 bg-ui-bg-base border border-ui-border-base rounded-2xl shadow-xs space-y-4">
+										<Heading level="h3" className="text-sm font-semibold">
+											Create New Documentation Page in {selectedSite.name}
+										</Heading>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+											<div>
+												<label
+													htmlFor="doc-title"
+													className="block text-xs font-medium text-ui-fg-subtle mb-1"
+												>
+													Page Title
+												</label>
+												<Input
+													id="doc-title"
+													placeholder="e.g. Getting Started"
+													value={newPageTitle}
+													onChange={(e) => {
+														setNewPageTitle(e.target.value);
+														if (
+															!newPageSlug ||
+															newPageSlug.startsWith("page-")
+														) {
+															setNewPageSlug(
+																e.target.value
+																	.toLowerCase()
+																	.replace(/[^a-z0-9]+/g, "-"),
+															);
+														}
+													}}
+												/>
+											</div>
+											<div>
+												<label
+													htmlFor="doc-slug"
+													className="block text-xs font-medium text-ui-fg-subtle mb-1"
+												>
+													Page Slug (URL Path)
+												</label>
+												<Input
+													id="doc-slug"
+													placeholder="e.g. getting-started"
+													value={newPageSlug}
+													onChange={(e) => setNewPageSlug(e.target.value)}
+												/>
+											</div>
+										</div>
+										<div>
+											<label
+												htmlFor="doc-content"
+												className="block text-xs font-medium text-ui-fg-subtle mb-1"
+											>
+												Markdown Content
+											</label>
+											<Textarea
+												id="doc-content"
+												rows={4}
+												placeholder="# Header\n\nWrite documentation markdown here..."
+												value={newPageContent}
+												onChange={(e) => setNewPageContent(e.target.value)}
+											/>
+										</div>
+										<div className="flex items-center justify-end gap-2 pt-2">
+											<Button
+												variant="secondary"
+												onClick={() => setIsCreatingPage(false)}
+											>
+												Cancel
+											</Button>
+											<Button
+												variant="primary"
+												isLoading={createDocPageMutation.isPending}
+												onClick={async () => {
+													if (!newPageTitle.trim() || !newPageSlug.trim()) {
+														toast.error("Please provide both title and slug");
+														return;
+													}
+													try {
+														const created =
+															await createDocPageMutation.mutateAsync({
+																site_id: selectedSite.id,
+																title: newPageTitle.trim(),
+																slug: newPageSlug.trim(),
+																content:
+																	newPageContent ||
+																	`# ${newPageTitle}\n\nPage documentation content.`,
+																status: "published",
+															});
+														toast.success(`Created page: ${created.title}`);
+														setNewPageTitle("");
+														setNewPageSlug("");
+														setNewPageContent("");
+														setIsCreatingPage(false);
+														setSelectedPageId(created.id);
+													} catch {
+														toast.error("Failed to create page");
+													}
+												}}
+											>
+												Save & Publish Page
+											</Button>
+										</div>
+									</div>
+								)}
+
+								{/* Pages Grid & Viewer */}
+								<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+									{/* Pages List (Sidebar) */}
+									<div className="space-y-3">
+										<div className="flex items-center justify-between pb-1">
+											<span className="text-xs font-semibold text-ui-fg-subtle uppercase tracking-wider">
+												Documentation Pages ({docPages.length})
+											</span>
+											{isDocPagesLoading && (
+												<span className="text-xs text-ui-fg-muted">
+													Loading...
+												</span>
+											)}
+										</div>
+
+										{docPages.length === 0 ? (
+											<div className="p-6 text-center bg-ui-bg-base border border-ui-border-base rounded-xl">
+												<BookOpen className="w-8 h-8 text-ui-fg-muted mx-auto mb-2" />
+												<p className="text-xs text-ui-fg-subtle">
+													No documentation pages yet. Click "+ Add Page" above.
+												</p>
+											</div>
+										) : (
+											<div className="space-y-2">
+												{docPages.map((page) => (
+													<div
+														key={page.id}
+														className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+															activeDocPage?.id === page.id
+																? "bg-ui-bg-base border-ui-border-strong shadow-xs ring-1 ring-ui-border-strong"
+																: "bg-ui-bg-base border-ui-border-base hover:border-ui-border-strong/70"
+														}`}
+													>
+														<button
+															type="button"
+															onClick={() => setSelectedPageId(page.id)}
+															className="text-left flex-1 cursor-pointer"
+														>
+															<div className="font-semibold text-xs text-ui-fg-base flex items-center gap-1.5">
+																<span>{page.title}</span>
+																<Badge color="green" size="small">
+																	{page.status}
+																</Badge>
+															</div>
+															<span className="text-[11px] font-mono text-ui-fg-muted block mt-0.5">
+																/{page.slug}
+															</span>
+														</button>
+														<Button
+															size="small"
+															variant="transparent"
+															className="text-rose-500 hover:text-rose-600 text-xs px-2"
+															onClick={async (e) => {
+																e.stopPropagation();
+																try {
+																	await deleteDocPageMutation.mutateAsync({
+																		siteId: selectedSite.id,
+																		pageId: page.id,
+																	});
+																	toast.success(`Deleted ${page.title}`);
+																	if (selectedPageId === page.id) {
+																		setSelectedPageId(null);
+																	}
+																} catch {
+																	toast.error("Failed to delete page");
+																}
+															}}
+														>
+															Delete
+														</Button>
+													</div>
+												))}
+											</div>
+										)}
+									</div>
+
+									{/* Content Preview (Main pane) */}
+									<div className="lg:col-span-2">
+										{activeDocPage ? (
+											<div className="p-6 bg-ui-bg-base border border-ui-border-base rounded-2xl shadow-xs space-y-4">
+												<div className="flex items-center justify-between border-b border-ui-border-base pb-3">
+													<div>
+														<Heading
+															level="h2"
+															className="text-base font-semibold"
+														>
+															{activeDocPage.title}
+														</Heading>
+														<span className="text-xs font-mono text-ui-fg-subtle">
+															/{selectedSite.slug}/{activeDocPage.slug}
+														</span>
+													</div>
+													<Badge color="green">{activeDocPage.status}</Badge>
+												</div>
+												<div className="p-4 bg-ui-bg-subtle border border-ui-border-base rounded-xl font-mono text-xs leading-relaxed whitespace-pre-wrap">
+													{activeDocPage.content}
+												</div>
+												<div className="flex items-center justify-between text-xs text-ui-fg-muted pt-2 border-t border-ui-border-base/50">
+													<span>
+														Site ID:{" "}
+														<span className="font-mono">{selectedSite.id}</span>
+													</span>
+													<span>
+														Updated:{" "}
+														{new Date(
+															activeDocPage.updated_at,
+														).toLocaleTimeString()}
+													</span>
+												</div>
+											</div>
+										) : (
+											<div className="p-12 text-center bg-ui-bg-base border border-ui-border-base rounded-2xl">
+												<BookOpen className="w-10 h-10 text-ui-fg-muted mx-auto mb-2" />
+												<p className="text-sm text-ui-fg-subtle">
+													Select a page to preview content or add a new page
+												</p>
+											</div>
+										)}
+									</div>
+								</div>
+							</div>
+						) : sites.length === 0 ? (
+							<div className="p-12 text-center bg-ui-bg-base border border-ui-border-base rounded-2xl">
+								<BookOpen className="w-12 h-12 text-ui-fg-muted mx-auto mb-3" />
+								<h3 className="font-semibold text-ui-fg-base mb-1">
+									No Documentation Sites Yet
+								</h3>
+								<p className="text-sm text-ui-fg-subtle mb-6">
+									{user
+										? "Create your first documentation site or API guide."
+										: "Sign in or create an account to view and manage documentation sites."}
+								</p>
+								{!user && (
+									<div className="flex flex-wrap items-center justify-center gap-3">
+										<Button
+											variant="primary"
+											onClick={async () => {
+												const res = await login({
+													email: DEMO_CREDENTIALS.standardEmail,
+													password: DEMO_CREDENTIALS.defaultPassword,
+												});
+												if (res?.user) {
+													toast.success(
+														"Signed in with Demo Admin credentials!",
+													);
+												}
+											}}
+										>
+											<Sparkles className="w-4 h-4 mr-1.5" />
+											Instant Demo Login
+										</Button>
+										<Link to="/login">
+											<Button variant="secondary">Log in page</Button>
+										</Link>
+										<Link to="/signup">
+											<Button variant="secondary">Sign up page</Button>
+										</Link>
+									</div>
+								)}
+							</div>
+						) : (
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+								{sites.map((site) => (
+									<button
+										type="button"
+										key={site.id}
+										onClick={() => {
+											setSelectedSiteId(site.id);
+											setSelectedPageId(null);
+										}}
+										className="w-full text-left p-5 bg-ui-bg-base border border-ui-border-base rounded-xl shadow-xs flex flex-col justify-between hover:border-ui-border-strong hover:shadow-sm cursor-pointer transition-all group"
+									>
+										<div>
+											<div className="flex items-center justify-between mb-2">
+												<span className="font-semibold text-sm text-ui-fg-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+													{site.name}
+												</span>
+												<Badge color={site.is_public ? "green" : "orange"}>
+													{site.is_public ? "Public" : "Private"}
+												</Badge>
+											</div>
+											<p className="text-xs text-ui-fg-subtle mb-3">
+												{site.description || "No description provided"}
+											</p>
+										</div>
+										<div className="w-full pt-3 border-t border-ui-border-base/50 flex items-center justify-between text-xs text-ui-fg-muted font-mono">
+											<span>/{site.slug}</span>
+											<span className="text-[11px] text-blue-500 font-sans group-hover:underline">
+												Manage Pages &rarr;
+											</span>
+										</div>
+									</button>
+								))}
+							</div>
+						)}
 					</div>
 				)}
 

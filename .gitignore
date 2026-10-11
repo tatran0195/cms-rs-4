@@ -8,6 +8,7 @@ Cargo.lock
 .env
 .env.production
 .env*.local
+*.local
 
 # SSO provisioning creds (client secret) — real file is local-only.
 entra-sso.json
@@ -20,22 +21,66 @@ entra-sso.json
 *.swo
 *~
 
-# macOS
+# Operating System
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+ehthumbs_vista.db
+Thumbs.db
+Thumbs.db:encryptable
+[Dd]esktop.ini
+$RECYCLE.BIN/
 
 # Node
 node_modules/
 pnpm-lock.yaml
 
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
 # Build outputs
-apps/web/dist/
+dist/
+dist-ssr/
+build/
+out/
+.output/
+lib/
 packages/*/lib/
+apps/web/dist/
+storybook-static/
+apps/storybook/storybook-static/
+packages/ui/storybook-static/
+
+# Framework & bundler outputs
+.next/
+.nitro/
+.vinxi/
+.wrangler/
+.vercel/
+__unconfig*
+todos.json
+*.tsbuildinfo
 
 # Test coverage
 coverage/
+.nyc_output/
 
-# Turbo
+# Caches
+.cache/
+.parcel-cache/
 .turbo/
+.tanstack/
+.vite/
+.vitest/
+.rollup.cache/
+.eslintcache/
 
 # Local development logs
 var/log/dev/
@@ -77,8 +122,6 @@ perf.data.old
 pgdata/
 yottadata/
 
-# TanStack
-.tanstack/
 
 # Playwright
 apps/web/e2e/.auth/
@@ -111,9 +154,11 @@ var/
 # Detox run artifacts — screenshots and device logs from the last e2e run.
 apps/*/artifacts/
 
-# Environment backups. infra/.env.bak.1650 was found holding four
-# secret-bearing lines and untracked but NOT ignored — one `git add -A` from
-# being in history permanently, where a rotation cannot remove it.
+# Temporary, upgrade & backup files
+*.tmp
+*.tmp.*
+*.tailwind-upgrade.*
 *.bak
 .env.bak.*
 infra/.env.bak.*
+

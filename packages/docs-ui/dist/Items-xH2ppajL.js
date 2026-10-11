@@ -1,4 +1,4 @@
-import { I as InlineCode, R as CopyButton, Y as useIsBrowser, _ as DetailsSummary, a as MarkdownContent, g as Details, q as useSiteConfig, s as MDXComponents, zt as clsx } from "./AiAssistant-BWYUi9UT.js";
+import { I as InlineCode, R as CopyButton, Y as useIsBrowser, _ as DetailsSummary, a as MarkdownContent, g as Details, q as useSiteConfig, s as MDXComponents, zt as clsx } from "./AiAssistant-BK3YpMIA.js";
 import { DeprecatedNotice, ExpandableNotice, FeatureFlagNotice, VersionNotice, decodeStr, isInView } from "./index.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDownLeftMini, ArrowsPointingOutMini, FlagMini, Link, TriangleRightMini } from "@cms/icons";
@@ -188,4 +188,4 @@ const TypeListItems = ({ types, ...rest }) => /* @__PURE__ */ jsx("div", { child
 //#endregion
 export { TypeListItems as default };
 
-//# sourceMappingURL=Items-U5gzzE70.js.map
+//# sourceMappingURL=Items-xH2ppajL.js.map

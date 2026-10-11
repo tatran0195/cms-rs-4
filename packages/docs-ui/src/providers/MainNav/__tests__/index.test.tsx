@@ -25,7 +25,7 @@ vi.mock('@/providers/SiteConfig', () => ({
   useSiteConfig: () => mockUseSiteConfig(),
 }));
 
-const mockShownSidebar = vi.fn(() => null);
+const mockShownSidebar = vi.fn<() => { sidebar_id?: string } | null>(() => null);
 
 vi.mock('@/providers/Sidebar', () => ({
   useSidebar: () => ({
@@ -376,7 +376,7 @@ describe('sidebar_id matching', () => {
                 title: 'Configuration',
                 link: '/docs/config',
                 sidebar_id: 'config-sidebar',
-              },
+              } as any,
               {
                 type: 'link',
                 title: 'Deployment',

@@ -56,10 +56,10 @@ describe('render', () => {
     expect(productLinks).toHaveLength(2);
     expect(productLinks[0]).toBeInTheDocument();
     expect(productLinks[0]).toHaveAttribute('href', `https://docs.cms.com${cartProduct?.path}`);
-    expect(productLinks[0]).toHaveTextContent(cartProduct?.title);
+    expect(productLinks[0]).toHaveTextContent(cartProduct?.title || '');
 
     expect(productLinks[1]).toBeInTheDocument();
     expect(productLinks[1]).toHaveAttribute('href', `https://docs.cms.com${productProduct?.path}`);
-    expect(productLinks[1]).toHaveTextContent(productProduct?.title);
+    expect(productLinks[1]).toHaveTextContent(productProduct?.title || '');
   });
 });

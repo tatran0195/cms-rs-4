@@ -1113,20 +1113,6 @@ const useAnalytics = () => {
 	return context;
 };
 //#endregion
-//#region src/components/Link/index.tsx
-const HASH_REGEX = /#.*$/;
-const Link$1 = ({ href, children, className, withIcon = false, variant = "default", ...rest }) => {
-	const hash = href?.match(HASH_REGEX)?.[0] || "";
-	const hrefWithoutHash = href?.replace(HASH_REGEX, "") || "";
-	if (hrefWithoutHash.endsWith("page.mdx")) href = hrefWithoutHash.replace("/page.mdx", "") + hash;
-	return /* @__PURE__ */ jsxs(NextLink, {
-		href: href || "",
-		...rest,
-		className: clsx(variant === "default" && "text-cms-fg-interactive hover:text-cms-fg-interactive-hover", variant === "content" && ["underline decoration-cms-fg-muted hover:decoration-cms-fg-interactive", "decoration-[1.5px] font-medium transition-[text-decoration-color]"], withIcon && "flex gap-0.25 items-center group", className),
-		children: [children, withIcon && /* @__PURE__ */ jsx(TriangleRightMini, { className: "group-hover:translate-x-docs_0.125 transition-transform" })]
-	});
-};
-//#endregion
 //#region src/components/Icons/Bloom/index.tsx
 const BloomIcon = (props) => /* @__PURE__ */ jsx("svg", {
 	width: "15",
@@ -1455,6 +1441,20 @@ const ShadedBgIcon = ({ variant = "blue", ...props }) => {
 				transform: "translate(22.4385 -76.4437) rotate(45)"
 			})
 		}) })]
+	});
+};
+//#endregion
+//#region src/components/Link/index.tsx
+const HASH_REGEX = /#.*$/;
+const Link$1 = ({ href, children, className, withIcon = false, variant = "default", ...rest }) => {
+	const hash = href?.match(HASH_REGEX)?.[0] || "";
+	const hrefWithoutHash = href?.replace(HASH_REGEX, "") || "";
+	if (hrefWithoutHash.endsWith("page.mdx")) href = hrefWithoutHash.replace("/page.mdx", "") + hash;
+	return /* @__PURE__ */ jsxs(NextLink, {
+		href: href || "",
+		...rest,
+		className: clsx(variant === "default" && "text-cms-fg-interactive hover:text-cms-fg-interactive-hover", variant === "content" && ["underline decoration-cms-fg-muted hover:decoration-cms-fg-interactive", "decoration-[1.5px] font-medium transition-[text-decoration-color]"], withIcon && "flex gap-0.25 items-center group", className),
+		children: [children, withIcon && /* @__PURE__ */ jsx(TriangleRightMini, { className: "group-hover:translate-x-docs_0.125 transition-transform" })]
 	});
 };
 //#endregion
@@ -5540,6 +5540,6 @@ const useAiAssistant = () => {
 	return context;
 };
 //#endregion
-export { SearchProvider as $, LayoutProviderContext as A, findPrevSibling as At, useCollapsibleCodeLines as B, usePrevious as C, CLOUD_STATUS_PAGE_URL as Ct, getScrolledTop as D, products as Dt, useScrollPositionBlocker as E, navDropdownItems as Et, Loading as F, Button$1 as Ft, ProductView as G, ApiRunner as H, InlineCode as I, ModalProvider as It, BrowserProvider as J, SiteConfigProvider as K, CodeBlock as L, useModal as Lt, CodeTabs as M, Modal as Mt, useTabs as N, ModalHeader as Nt, isElmWindow as O, useSearchNavigation as Ot, MermaidDiagram as P, ModalFooter as Pt, InputText as Q, CopyButton as R, useKeyboardShortcut as Rt, useEvent as S, useCMSSuggestions as St, useScrollPosition as T, GITHUB_ISSUES_LINK as Tt, useRequestRunner as U, useCollapsible as V, AiAssistantSuggestions as W, globalConfig as X, useIsBrowser as Y, Tooltip$1 as Z, DetailsSummary as _, ShadedBgIcon as _t, MarkdownContent as a, SearchHitsWrapper as at, CodeTab as b, AnalyticsProvider as bt, ZoomImg as c, Kbd as ct, H3 as d, ThemeImage as dt, useSearch as et, H2 as f, ColorModeProvider as ft, Details as g, Badge as gt, ShadedBlock as h, BorderedIcon as ht, AiAssistantThreadItem as i, SearchHits as it, useLayout as j, SpinnerLoading as jt, LayoutProvider as k, findNextSibling as kt, Note as l, SearchEmptyQueryBoundary as lt, H1 as m, useIsExternalLink as mt, useAiAssistant as n, SearchSuggestions as nt, Hr as o, SearchNoResult as ot, useHeadingUrl as p, useColorMode as pt, useSiteConfig as q, AiAssistantSearchWindow as r, SearchSuggestionItem as rt, MDXComponents as s, SearchHitGroupName as st, AiAssistantProvider as t, Search as tt, H4 as u, Card as ut, CardList as v, BloomIcon as vt, useScrollController as w, DocsTrackingEvents as wt, ScrollControllerProvider as x, useAnalytics as xt, CodeMdx as y, Link$1 as yt, useCopy as z, clsx as zt };
+export { SearchProvider as $, LayoutProviderContext as A, findPrevSibling as At, useCollapsibleCodeLines as B, usePrevious as C, CLOUD_STATUS_PAGE_URL as Ct, getScrolledTop as D, products as Dt, useScrollPositionBlocker as E, navDropdownItems as Et, Loading as F, Button$1 as Ft, ProductView as G, ApiRunner as H, InlineCode as I, ModalProvider as It, BrowserProvider as J, SiteConfigProvider as K, CodeBlock as L, useModal as Lt, CodeTabs as M, Modal as Mt, useTabs as N, ModalHeader as Nt, isElmWindow as O, useSearchNavigation as Ot, MermaidDiagram as P, ModalFooter as Pt, InputText as Q, CopyButton as R, useKeyboardShortcut as Rt, useEvent as S, useCMSSuggestions as St, useScrollPosition as T, GITHUB_ISSUES_LINK as Tt, useRequestRunner as U, useCollapsible as V, AiAssistantSuggestions as W, globalConfig as X, useIsBrowser as Y, Tooltip$1 as Z, DetailsSummary as _, Link$1 as _t, MarkdownContent as a, SearchHitsWrapper as at, CodeTab as b, AnalyticsProvider as bt, ZoomImg as c, Kbd as ct, H3 as d, ThemeImage as dt, useSearch as et, H2 as f, ColorModeProvider as ft, Details as g, Badge as gt, ShadedBlock as h, BorderedIcon as ht, AiAssistantThreadItem as i, SearchHits as it, useLayout as j, SpinnerLoading as jt, LayoutProvider as k, findNextSibling as kt, Note as l, SearchEmptyQueryBoundary as lt, H1 as m, useIsExternalLink as mt, useAiAssistant as n, SearchSuggestions as nt, Hr as o, SearchNoResult as ot, useHeadingUrl as p, useColorMode as pt, useSiteConfig as q, AiAssistantSearchWindow as r, SearchSuggestionItem as rt, MDXComponents as s, SearchHitGroupName as st, AiAssistantProvider as t, Search as tt, H4 as u, Card as ut, CardList as v, ShadedBgIcon as vt, useScrollController as w, DocsTrackingEvents as wt, ScrollControllerProvider as x, useAnalytics as xt, CodeMdx as y, BloomIcon as yt, useCopy as z, clsx as zt };
 
-//# sourceMappingURL=AiAssistant-BWYUi9UT.js.map
+//# sourceMappingURL=AiAssistant-BK3YpMIA.js.map

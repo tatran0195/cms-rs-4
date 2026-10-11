@@ -12,7 +12,7 @@
     "theme.css"
   ],
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo node_modules"
+    "clean": "git clean -xdf .cache node_modules"
   },
   "dependencies": {
     "@cms/ui-preset": "workspace:*"

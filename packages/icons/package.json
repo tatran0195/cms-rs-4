@@ -15,7 +15,7 @@
     "src"
   ],
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo node_modules",
+    "clean": "git clean -xdf .cache node_modules",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

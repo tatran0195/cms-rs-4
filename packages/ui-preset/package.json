@@ -14,7 +14,7 @@
     "theme.css"
   ],
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo node_modules",
+    "clean": "git clean -xdf .cache node_modules",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

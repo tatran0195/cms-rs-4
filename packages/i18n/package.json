@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "clean": "git clean -xdf .cache .turbo dist node_modules src/paraglide",
+    "clean": "git clean -xdf .cache dist node_modules src/paraglide",
     "setup": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy cookie preferredLanguage baseLocale --output-structure message-modules --emit-ts-declarations",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "clean": "git clean -xdf .cache .turbo dist",
+    "clean": "git clean -xdf .cache dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

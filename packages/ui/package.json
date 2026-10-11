@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "clean": "git clean -xdf .cache dist node_modules",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
     "test": "vitest run",

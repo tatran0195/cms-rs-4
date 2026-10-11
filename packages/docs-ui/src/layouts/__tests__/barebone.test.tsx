@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
-const mockGoogleAnalytics = vi.fn(() => <script data-testid="ga-script" />);
+const mockGoogleAnalytics = vi.fn((_props?: { gaId: string }) => <script data-testid="ga-script" />);
 
 vi.mock('@next/third-parties/google', () => ({
   GoogleAnalytics: (props: { gaId: string }) => mockGoogleAnalytics(props),

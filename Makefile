@@ -465,7 +465,7 @@ endif
 clean: ## Clean build artifacts and temporary files
 ifeq ($(OS),Windows_NT)
 	cargo clean
-	@Remove-Item -Recurse -Force apps/web/dist, apps/desktop/dist, .turbo -ErrorAction SilentlyContinue; Write-Host 'Build artifacts cleaned.' -ForegroundColor Green
+	@Remove-Item -Recurse -Force apps/web/dist, apps/desktop/dist, -ErrorAction SilentlyContinue; Write-Host 'Build artifacts cleaned.' -ForegroundColor Green
 else
 	cargo clean
 	rm -rf apps/web/dist apps/desktop/dist .turbo

@@ -47,7 +47,7 @@ describe('rendering', () => {
   test('passes through other props', () => {
     const mockOnClick = vi.fn();
     const { container } = render(
-      <SearchSuggestionItem onClick={mockOnClick} tabIndex="0">
+      <SearchSuggestionItem onClick={mockOnClick} tabIndex={0}>
         Test
       </SearchSuggestionItem>,
     );

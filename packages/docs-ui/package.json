@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "clean": "git clean -xdf .cache .turbo dist",
+    "clean": "git clean -xdf .cache dist",
     "generate:mermaid-icons": "node scripts/generate-mermaid-icons.mjs",
     "lint": "biome lint src",
     "test": "vitest run",
@@ -60,6 +60,8 @@
   "devDependencies": {
     "@cms/tsconfig": "workspace:*",
     "@cms/types": "workspace:*",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
